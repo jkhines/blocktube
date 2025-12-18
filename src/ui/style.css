@@ -243,8 +243,8 @@ fieldset:last-of-type div {
   height: auto;
 }
 .CodeMirror .CodeMirror-scroll {
-  min-height: 220px;
-  max-height: 220px;
+  min-height: 250px;
+  max-height: 250px;
 }
 
 .CodeMirror-fullscreen {

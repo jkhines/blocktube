@@ -52,29 +52,59 @@ Filter and block unwanted content from YouTube™.
 
 ## Development & Build
 
-*Ubuntu*
-```
-# Install build requirements
+### Prerequisites
+
+```bash
+# Install Node.js and npm
 sudo apt install nodejs npm
-sudo npm install -g terser
 
-# Clone Repo
+# Clone and install dependencies
 git clone https://github.com/amitbl/blocktube
-
-### Make your changes ###
-
-# Build package
-./tools/build.sh firefox
-./tools/build.sh chrome
-
-# Output packages locations
-./dist/firefox/blocktube_firefox_VERSION.zip
-./dist/chrome/blocktube_chrome_VERSION.zip
-
-# Temporary installation / debugging
-Firefox: https://extensionworkshop.com/documentation/develop/temporary-installation-in-firefox/
-Chrome: https://developer.chrome.com/docs/extensions/mv3/getstarted/development-basics/#load-unpacked
+cd blocktube
+npm install
 ```
+
+### Local Development
+
+For Chrome development, load the extension directly from the repository root:
+
+1. Open `chrome://extensions`
+2. Enable "Developer mode"
+3. Click "Load unpacked"
+4. Select the repository root folder
+
+Edit files in `src/` and reload the extension to see changes.
+
+### Production Builds
+
+```bash
+# Build for Chrome
+npm run build:chrome
+# Output: dist/chrome/blocktube_chrome_VERSION.zip
+
+# Build for Firefox
+npm run build:firefox
+# Output: dist/firefox/blocktube_firefox_VERSION.zip
+
+# Build for Firefox self-hosted
+npm run build:firefox-selfhosted
+
+# Clean build outputs
+npm run clean
+```
+
+### Testing
+
+```bash
+npm test              # Run tests
+npm run test:watch    # Run tests in watch mode
+npm run test:coverage # Run tests with coverage
+```
+
+### Firefox Temporary Installation
+
+For Firefox development, build the extension first then follow:
+https://extensionworkshop.com/documentation/develop/temporary-installation-in-firefox/
 
 ## Future work
 

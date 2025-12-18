@@ -6,7 +6,12 @@
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "build": "bash tools/build.sh",
+    "build:chrome": "bash tools/build.sh chrome",
+    "build:firefox": "bash tools/build.sh firefox",
+    "build:firefox-selfhosted": "bash tools/build.sh firefox_selfhosted",
+    "clean": "bash tools/build.sh"
   },
   "devDependencies": {
     "jest": "^29.7.0",
