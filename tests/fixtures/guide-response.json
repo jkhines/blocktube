@@ -1,0 +1,86 @@
+{
+  "_meta": {
+    "description": "YouTube sidebar guide response fixture",
+    "source": "/youtubei/v1/guide",
+    "captured": "2024-01-15"
+  },
+  "items": [
+    {
+      "guideSectionRenderer": {
+        "items": [
+          {
+            "guideEntryRenderer": {
+              "navigationEndpoint": {
+                "browseEndpoint": { "browseId": "FEwhat_to_watch" }
+              },
+              "title": { "simpleText": "Home" },
+              "formattedTitle": { "simpleText": "Home" }
+            }
+          },
+          {
+            "guideEntryRenderer": {
+              "navigationEndpoint": {
+                "browseEndpoint": { "browseId": "FEtrending" }
+              },
+              "title": { "simpleText": "Trending" },
+              "formattedTitle": { "simpleText": "Trending" }
+            }
+          },
+          {
+            "guideEntryRenderer": {
+              "navigationEndpoint": {
+                "browseEndpoint": { "browseId": "FEexplore" }
+              },
+              "title": { "simpleText": "Explore" },
+              "formattedTitle": { "simpleText": "Explore" }
+            }
+          },
+          {
+            "guideEntryRenderer": {
+              "icon": { "iconType": "TAB_SHORTS" },
+              "navigationEndpoint": {
+                "browseEndpoint": { "browseId": "FEshorts" }
+              },
+              "title": { "simpleText": "Shorts" }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "guideSectionRenderer": {
+        "title": { "simpleText": "Subscriptions" },
+        "items": [
+          {
+            "guideEntryRenderer": {
+              "navigationEndpoint": {
+                "browseEndpoint": { "browseId": "UC_SUBSCRIBED_CHANNEL_1" }
+              },
+              "title": { "simpleText": "Tech Reviews" },
+              "formattedTitle": { "simpleText": "Tech Reviews" }
+            }
+          },
+          {
+            "guideEntryRenderer": {
+              "navigationEndpoint": {
+                "browseEndpoint": { "browseId": "UC_BLOCKED_SUBSCRIPTION" }
+              },
+              "title": { "simpleText": "Blocked Channel" },
+              "formattedTitle": { "simpleText": "Blocked Channel" }
+            }
+          },
+          {
+            "guideEntryRenderer": {
+              "navigationEndpoint": {
+                "browseEndpoint": { "browseId": "UC_SUBSCRIBED_CHANNEL_2" }
+              },
+              "title": { "simpleText": "Gaming Channel" },
+              "formattedTitle": { "simpleText": "Gaming Channel" }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
+

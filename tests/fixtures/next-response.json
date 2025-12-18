@@ -1,0 +1,152 @@
+{
+  "_meta": {
+    "description": "YouTube watch page next/recommendations response fixture",
+    "source": "/youtubei/v1/next",
+    "captured": "2024-01-15"
+  },
+  "contents": {
+    "twoColumnWatchNextResults": {
+      "results": {
+        "results": {
+          "contents": [
+            {
+              "videoPrimaryInfoRenderer": {
+                "title": { "runs": [{ "text": "Currently Watching Video" }] },
+                "viewCount": {
+                  "videoViewCountRenderer": {
+                    "viewCount": { "simpleText": "1,234,567 views" }
+                  }
+                }
+              }
+            },
+            {
+              "videoSecondaryInfoRenderer": {
+                "owner": {
+                  "videoOwnerRenderer": {
+                    "title": { "runs": [{ "text": "Current Channel" }] },
+                    "navigationEndpoint": {
+                      "browseEndpoint": { "browseId": "UC_CURRENT_CHANNEL" }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "secondaryResults": {
+        "secondaryResults": {
+          "results": [
+            {
+              "compactVideoRenderer": {
+                "videoId": "recommended_1",
+                "title": { "simpleText": "Recommended Video 1" },
+                "shortBylineText": {
+                  "runs": [{
+                    "text": "Recommended Channel",
+                    "navigationEndpoint": {
+                      "browseEndpoint": { "browseId": "UC_RECOMMENDED" }
+                    }
+                  }]
+                },
+                "thumbnailOverlays": [{
+                  "thumbnailOverlayTimeStatusRenderer": {
+                    "text": { "simpleText": "8:45" }
+                  }
+                }]
+              }
+            },
+            {
+              "compactVideoRenderer": {
+                "videoId": "BLOCKED_RECOMMENDED",
+                "title": { "simpleText": "This Recommendation Should Be Blocked" },
+                "shortBylineText": {
+                  "runs": [{
+                    "text": "Blocked Channel",
+                    "navigationEndpoint": {
+                      "browseEndpoint": { "browseId": "UC_BLOCKED_CHANNEL" }
+                    }
+                  }]
+                },
+                "thumbnailOverlays": [{
+                  "thumbnailOverlayTimeStatusRenderer": {
+                    "text": { "simpleText": "15:00" }
+                  }
+                }]
+              }
+            },
+            {
+              "compactVideoRenderer": {
+                "videoId": "recommended_2",
+                "title": { "simpleText": "Another Good Recommendation" },
+                "shortBylineText": {
+                  "runs": [{
+                    "text": "Good Channel",
+                    "navigationEndpoint": {
+                      "browseEndpoint": { "browseId": "UC_GOOD_CHANNEL" }
+                    }
+                  }]
+                },
+                "thumbnailOverlays": [{
+                  "thumbnailOverlayTimeStatusRenderer": {
+                    "text": { "simpleText": "6:30" }
+                  }
+                }]
+              }
+            },
+            {
+              "compactRadioRenderer": {
+                "playlistId": "RDMIX_recommended",
+                "title": { "simpleText": "Mix - Based on your watch" },
+                "shortBylineText": { "simpleText": "YouTube" }
+              }
+            },
+            {
+              "compactVideoRenderer": {
+                "videoId": "short_recommended",
+                "title": { "simpleText": "Short Clip" },
+                "shortBylineText": {
+                  "runs": [{
+                    "text": "Shorts Creator",
+                    "navigationEndpoint": {
+                      "browseEndpoint": { "browseId": "UC_SHORTS" }
+                    }
+                  }]
+                },
+                "thumbnailOverlays": [{
+                  "thumbnailOverlayTimeStatusRenderer": {
+                    "text": { "simpleText": "SHORTS" }
+                  }
+                }]
+              }
+            }
+          ]
+        }
+      },
+      "autoplay": {
+        "autoplay": {
+          "sets": [{
+            "autoplayVideo": {
+              "videoId": "recommended_1",
+              "watchEndpoint": { "videoId": "recommended_1" }
+            }
+          }]
+        }
+      }
+    }
+  },
+  "playerOverlays": {
+    "playerOverlayRenderer": {
+      "autoplay": {
+        "playerOverlayAutoplayRenderer": {
+          "videoId": "recommended_1",
+          "videoTitle": { "simpleText": "Recommended Video 1" },
+          "byline": {
+            "runs": [{ "text": "Recommended Channel" }]
+          }
+        }
+      }
+    }
+  }
+}
+

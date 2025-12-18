@@ -1,0 +1,70 @@
+{
+  "name": "Video ID and Title Blocking",
+  "description": "Test blocking videos by video ID and title patterns",
+  "tests": [
+    {
+      "name": "Block by exact video ID",
+      "filters": {
+        "videoId": ["BLOCKED_VIDEO_001"]
+      },
+      "fixture": "search-response.json",
+      "expect": {
+        "blocked": [
+          { "videoId": "BLOCKED_VIDEO_001" }
+        ],
+        "allowed": [
+          { "videoId": "dQw4w9WgXcQ" },
+          { "videoId": "abc123normal" }
+        ]
+      }
+    },
+    {
+      "name": "Block by title keyword",
+      "filters": {
+        "title": ["/CLICKBAIT/i"]
+      },
+      "fixture": "browse-response.json",
+      "expect": {
+        "blocked": [
+          { "videoId": "blocked_by_title", "reason": "title contains CLICKBAIT" }
+        ],
+        "allowed": [
+          { "videoId": "allowed_home_video" }
+        ]
+      }
+    },
+    {
+      "name": "Block by title regex",
+      "filters": {
+        "title": ["/Should Be Blocked/i"]
+      },
+      "fixture": "search-response.json",
+      "expect": {
+        "blocked": [
+          { "videoId": "BLOCKED_VIDEO_001" }
+        ],
+        "allowed": [
+          { "videoId": "dQw4w9WgXcQ" },
+          { "videoId": "abc123normal" }
+        ]
+      }
+    },
+    {
+      "name": "Block recommendations by video ID",
+      "filters": {
+        "videoId": ["BLOCKED_RECOMMENDED"]
+      },
+      "fixture": "next-response.json",
+      "expect": {
+        "blocked": [
+          { "videoId": "BLOCKED_RECOMMENDED" }
+        ],
+        "allowed": [
+          { "videoId": "recommended_1" },
+          { "videoId": "recommended_2" }
+        ]
+      }
+    }
+  ]
+}
+

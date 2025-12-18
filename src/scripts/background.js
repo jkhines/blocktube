@@ -13,6 +13,7 @@ let storage = {
     channelName: [],
     comment: [],
     title: [],
+    description: [],
     vidLength: [null, null],
     javascript: "",
     percentWatchedHide: null
@@ -33,51 +34,76 @@ let storage = {
   },
 };
 
+// Precompiled regex for parsing raw regex patterns
+const rawRegexPattern = /^\/(.*)\/(.*)$/;
+// Set for faster type checking
+const idTypes = new Set(['channelId', 'videoId']);
+
 const utils = {
   compileRegex(entriesArr, type) {
-    if (!(entriesArr instanceof Array)) {
+    if (!Array.isArray(entriesArr)) {
       return undefined;
     }
     // empty dataset
     if (entriesArr.length === 1 && entriesArr[0] === '') return [];
 
-    // skip empty and comments lines
-    const filtered = [...new Set(entriesArr.filter(x => !(!x || x === '' || x.startsWith('//'))))];
+    // skip empty and comments lines - use for loop instead of filter for performance
+    const seen = new Set();
+    const filtered = [];
+    for (let i = 0, len = entriesArr.length; i < len; i++) {
+      const x = entriesArr[i];
+      if (!x || x === '' || x.startsWith('//')) continue;
+      const trimmed = x.trim();
+      if (!seen.has(trimmed)) {
+        seen.add(trimmed);
+        filtered.push(trimmed);
+      }
+    }
 
-    return filtered.map((v) => {
-      v = v.trim();
+    const isIdType = idTypes.has(type);
+    const result = new Array(filtered.length);
+    
+    for (let i = 0, len = filtered.length; i < len; i++) {
+      const v = filtered[i];
 
       // unique id
-      if (['channelId', 'videoId'].includes(type)) {
-        return [`^${v}$`, ''];
+      if (isIdType) {
+        result[i] = [`^${v}$`, ''];
+        continue;
       }
 
       // raw regex
-      const parts = /^\/(.*)\/(.*)$/.exec(v);
+      const parts = rawRegexPattern.exec(v);
       if (parts !== null) {
-        return [parts[1], parts[2]];
+        result[i] = [parts[1], parts[2]];
+        continue;
       }
 
       // regular keyword
-      return ['(^|' + unicodeBoundry + ')(' +
+      result[i] = ['(^|' + unicodeBoundry + ')(' +
         v.replace(/[\\^$*+?.()|[\]{}]/g, '\\$&') +
         ')(' + unicodeBoundry + '|$)', 'i'];
-    });
+    }
+    
+    return result;
   },
 
   compileAll(data) {
     const sendData = { filterData: {}, options: data.options };
+    const filterData = data.filterData;
 
-    // compile regex props
-    ['title', 'channelName', 'channelId', 'videoId', 'comment'].forEach((p) => {
-      const dataArr = this.compileRegex(data.filterData[p], p);
+    // compile regex props - use for loop instead of forEach
+    const regexProps = ['title', 'channelName', 'channelId', 'videoId', 'comment', 'description'];
+    for (let i = 0; i < 6; i++) {
+      const p = regexProps[i];
+      const dataArr = this.compileRegex(filterData[p], p);
       if (dataArr) {
         sendData.filterData[p] = dataArr;
       }
-    });
+    }
 
-    sendData.filterData.vidLength = data.filterData.vidLength;
-    sendData.filterData.javascript = data.filterData.javascript;
+    sendData.filterData.vidLength = filterData.vidLength;
+    sendData.filterData.javascript = filterData.javascript;
 
     return sendData;
   },
@@ -87,23 +113,27 @@ const utils = {
   },
 
   sendFiltersToAll() {
-    Object.keys(ports).forEach((p) => {
+    const message = { type: 'filtersData', data: { storage, compiledStorage, enabled } };
+    const portKeys = Object.keys(ports);
+    for (let i = 0, len = portKeys.length; i < len; i++) {
       try {
-        ports[p].postMessage({ type: 'filtersData', data: { storage, compiledStorage, enabled } });
+        ports[portKeys[i]].postMessage(message);
       } catch (e) {
         console.error('Where are you my child?');
       }
-    });
+    }
   },
 
   sendReloadToAll() {
-    Object.keys(ports).forEach((p) => {
+    const message = { type: 'reloadRequired' };
+    const portKeys = Object.keys(ports);
+    for (let i = 0, len = portKeys.length; i < len; i++) {
       try {
-        ports[p].postMessage({ type: 'reloadRequired'});
+        ports[portKeys[i]].postMessage(message);
       } catch (e) {
         console.error('Where are you my child?');
       }
-    });
+    }
   }
 };
 
@@ -155,4 +185,19 @@ chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason === chrome.runtime.OnInstalledReason.UPDATE) {
     utils.sendReloadToAll();
   }
-})
+});
+
+// Export for testing (Node.js/Jest environment)
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    utils,
+    // Test helpers to access/modify internal state
+    _getStorage: () => storage,
+    _setStorage: (data) => { storage = data; },
+    _getEnabled: () => enabled,
+    _setEnabled: (val) => { enabled = val; },
+    _getPorts: () => ports,
+    _getCompiledStorage: () => compiledStorage,
+    _setCompiledStorage: (data) => { compiledStorage = data; },
+  };
+}

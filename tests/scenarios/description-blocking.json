@@ -1,0 +1,53 @@
+{
+  "name": "Description Blocking",
+  "description": "Test blocking videos by description snippet patterns",
+  "tests": [
+    {
+      "name": "Block by description keyword",
+      "filters": {
+        "description": ["/BLOCKED_KEYWORD/i"]
+      },
+      "fixture": "search-response.json",
+      "expect": {
+        "blocked": [
+          { "videoId": "BLOCKED_VIDEO_001", "reason": "description contains BLOCKED_KEYWORD" }
+        ],
+        "allowed": [
+          { "videoId": "dQw4w9WgXcQ" },
+          { "videoId": "abc123normal" }
+        ]
+      }
+    },
+    {
+      "name": "Block by sponsor mention in description",
+      "filters": {
+        "description": ["/SPONSOR/i"]
+      },
+      "fixture": "browse-response.json",
+      "expect": {
+        "blocked": [
+          { "videoId": "blocked_by_title", "reason": "description contains SPONSOR" }
+        ],
+        "allowed": [
+          { "videoId": "allowed_home_video" }
+        ]
+      }
+    },
+    {
+      "name": "Block by multiple description patterns",
+      "filters": {
+        "description": ["/promo/i", "/sponsor/i"]
+      },
+      "fixture": "browse-response.json",
+      "expect": {
+        "blocked": [
+          { "videoId": "blocked_by_title", "reason": "description matches promo or sponsor" }
+        ],
+        "allowed": [
+          { "videoId": "allowed_home_video" }
+        ]
+      }
+    }
+  ]
+}
+

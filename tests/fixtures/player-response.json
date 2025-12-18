@@ -1,0 +1,58 @@
+{
+  "_meta": {
+    "description": "YouTube player response fixture",
+    "source": "/youtubei/v1/player",
+    "captured": "2024-01-15"
+  },
+  "videoDetails": {
+    "videoId": "dQw4w9WgXcQ",
+    "title": "Rick Astley - Never Gonna Give You Up",
+    "lengthSeconds": "213",
+    "channelId": "UCuAXFkgsw1L7xaCfnd5JJOw",
+    "author": "Rick Astley",
+    "shortDescription": "The official video for Rick Astley's song.",
+    "viewCount": "1500000000"
+  },
+  "playabilityStatus": {
+    "status": "OK",
+    "playableInEmbed": true
+  },
+  "streamingData": {
+    "adaptiveFormats": [
+      {
+        "itag": 140,
+        "mimeType": "audio/mp4",
+        "loudnessDb": -14.5
+      },
+      {
+        "itag": 251,
+        "mimeType": "audio/webm",
+        "loudnessDb": -13.2
+      }
+    ]
+  },
+  "playerConfig": {
+    "audioConfig": {
+      "loudnessDb": -14.5,
+      "perceptualLoudnessDb": -12.3,
+      "enablePerFormatLoudness": true
+    }
+  },
+  "messages": [
+    {
+      "mealbarPromoRenderer": {
+        "messageTexts": [{ "runs": [{ "text": "Some promo message" }] }]
+      }
+    },
+    {
+      "youThereRenderer": {
+        "confirmButton": {
+          "buttonRenderer": {
+            "text": { "runs": [{ "text": "Yes" }] }
+          }
+        }
+      }
+    }
+  ]
+}
+

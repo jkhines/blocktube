@@ -18,12 +18,13 @@
       channelName: ['// Add your channel name filters below', ''],
       comment: ['// Add your comment filters below', ''],
       title: ['// Add your video title filters below', ''],
+      description: ['// Add your video description filters below', ''],
     },
     options: {},
     uiPass: '',
   };
 
-  const textAreas = ['title', 'channelName', 'channelId', 'videoId', 'comment'];
+  const textAreas = ['title', 'description', 'channelName', 'channelId', 'videoId', 'comment'];
 
   function detectColorScheme(){
     let theme="light";
@@ -70,9 +71,10 @@
   }
 
   function saveForm() {
-    textAreas.forEach((v) => {
+    for (let i = 0, len = textAreas.length; i < len; i++) {
+      const v = textAreas[i];
       storageData.filterData[v] = multilineToArray(jsEditors[v].getValue());
-    });
+    }
 
     const vidLenMin = parseInt($('vidLength_0').value, 10);
     const vidLenMax = parseInt($('vidLength_1').value, 10);
@@ -129,10 +131,11 @@
   }
 
   function populateForms(obj = undefined) {
-    textAreas.forEach((v) => {
+    for (let i = 0, len = textAreas.length; i < len; i++) {
+      const v = textAreas[i];
       const content = get(`filterData.${v}`, [], obj);
       jsEditors[v].setValue(content.join('\n'));
-    });
+    }
 
     const vidLength = get('filterData.vidLength', [NaN, NaN], obj);
     $('vidLength_0').value         = vidLength[0];
@@ -176,22 +179,29 @@
   }
 
   function get(path, def = undefined, obj = undefined) {
-    const paths = (path instanceof Array) ? path : path.split('.');
+    const paths = Array.isArray(path) ? path : path.split('.');
     let nextObj = obj || storageData;
+    const len = paths.length;
 
-    const exist = paths.every((v) => {
-      if (nextObj instanceof Array) {
-        const found = nextObj.find(o => has.call(o, v));
-        if (found === undefined) return false;
+    for (let i = 0; i < len; i++) {
+      const v = paths[i];
+      if (Array.isArray(nextObj)) {
+        let found = undefined;
+        for (let j = 0, jlen = nextObj.length; j < jlen; j++) {
+          if (has.call(nextObj[j], v)) {
+            found = nextObj[j];
+            break;
+          }
+        }
+        if (found === undefined) return def;
         nextObj = found[v];
       } else {
-        if (!nextObj || !has.call(nextObj, v)) return false;
+        if (!nextObj || !has.call(nextObj, v)) return def;
         nextObj = nextObj[v];
       }
-      return true;
-    });
+    }
 
-    return exist ? nextObj : def;
+    return nextObj;
   }
 
   function setLabel(label, text) {
@@ -262,36 +272,45 @@
     });
   }
 
-  textAreas.concat('javascript').forEach((v) => {
-    jsEditors[v] = CodeMirror.fromTextArea($(v), {
-      mode: v === 'javascript' ? 'javascript' : 'blocktube',
-      matchBrackets: true,
-      autoCloseBrackets: true,
-      lineNumbers: true,
-      styleActiveLine: true,
-      lineWrapping: true,
-      extraKeys: {
-        F11: function(cm) {
-          if (cm.getOption("fullScreen")) {
-            cm.display.scroller.style.maxHeight = cm.start_h || "200px";
-          } else {
-            cm.display.scroller.style.maxHeight = "100%";
-          }
-          cm.setOption("fullScreen", !cm.getOption("fullScreen"));
-        },
-        Esc: function(cm) {
-          if (cm.getOption("fullScreen")) {
-            cm.display.scroller.style.maxHeight = cm.start_h || "200px";
-            cm.setOption("fullScreen", false);
-          }
+  // Pre-define common CodeMirror options
+  const cmOptions = {
+    matchBrackets: true,
+    autoCloseBrackets: true,
+    lineNumbers: true,
+    styleActiveLine: true,
+    lineWrapping: true,
+    extraKeys: {
+      F11: function(cm) {
+        if (cm.getOption("fullScreen")) {
+          cm.display.scroller.style.maxHeight = cm.start_h || "200px";
+        } else {
+          cm.display.scroller.style.maxHeight = "100%";
+        }
+        cm.setOption("fullScreen", !cm.getOption("fullScreen"));
+      },
+      Esc: function(cm) {
+        if (cm.getOption("fullScreen")) {
+          cm.display.scroller.style.maxHeight = cm.start_h || "200px";
+          cm.setOption("fullScreen", false);
         }
       }
-    });
+    }
+  };
+  
+  // Cache the change event once
+  const changeEvent = new Event('change', { bubbles: true });
+  const optionsEl = $('options');
+  
+  const allEditorAreas = ['title', 'description', 'channelName', 'channelId', 'videoId', 'comment', 'javascript'];
+  for (let i = 0, len = allEditorAreas.length; i < len; i++) {
+    const v = allEditorAreas[i];
+    const opts = Object.assign({ mode: v === 'javascript' ? 'javascript' : 'blocktube' }, cmOptions);
+    jsEditors[v] = CodeMirror.fromTextArea($(v), opts);
     cmResizer(jsEditors[v], $(v + '_resizer'));
-    jsEditors[v].on("change",() => {
-      $('options').dispatchEvent(new Event('change', { bubbles: true }));
+    jsEditors[v].on("change", () => {
+      optionsEl.dispatchEvent(changeEvent);
     });
-  });
+  }
 
   // !! Start
   document.addEventListener('DOMContentLoaded', loadData);

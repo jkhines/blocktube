@@ -40,6 +40,9 @@
               <input type="radio" name="filter-tab" id="tab-title" aria-controls="title-tab-content" checked>
               <label style="border-top: 1px solid var(--borders)" for="tab-title">Video title</label>
 
+              <input type="radio" name="filter-tab" id="tab-description" aria-controls="description-tab-content">
+              <label for="tab-description">Description</label>
+
               <input type="radio" name="filter-tab" id="tab-channel-name" aria-controls="channel-name-tab-content">
               <label for="tab-channel-name">Channel name</label>
 
@@ -63,6 +66,13 @@
                 <div>
                   <textarea id="title"></textarea>
                   <div id="title_resizer" class="cm-resizer"></div>
+                </div>
+              </section>
+
+              <section id="description-tab-content" class="tab-panel">
+                <div>
+                  <textarea id="description"></textarea>
+                  <div id="description_resizer" class="cm-resizer"></div>
                 </div>
               </section>
 

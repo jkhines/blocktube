@@ -1,0 +1,57 @@
+{
+  "name": "Channel ID and Name Blocking",
+  "description": "Test blocking videos by channel ID and channel name patterns",
+  "tests": [
+    {
+      "name": "Block by exact channel ID",
+      "filters": {
+        "channelId": ["UC_BLOCKED_CHANNEL"]
+      },
+      "fixture": "search-response.json",
+      "expect": {
+        "blocked": [
+          { "videoId": "BLOCKED_VIDEO_001", "reason": "channelId: UC_BLOCKED_CHANNEL" }
+        ],
+        "allowed": [
+          { "videoId": "dQw4w9WgXcQ" },
+          { "videoId": "abc123normal" },
+          { "videoId": "short_video_123" }
+        ]
+      }
+    },
+    {
+      "name": "Block by channel name regex",
+      "filters": {
+        "channelName": ["/^Blocked Channel$/i"]
+      },
+      "fixture": "search-response.json",
+      "expect": {
+        "blocked": [
+          { "videoId": "BLOCKED_VIDEO_001", "reason": "channelName: Blocked Channel" }
+        ],
+        "allowed": [
+          { "videoId": "dQw4w9WgXcQ" },
+          { "videoId": "abc123normal" }
+        ]
+      }
+    },
+    {
+      "name": "Block subscribed channel in sidebar",
+      "filters": {
+        "channelId": ["UC_BLOCKED_SUBSCRIPTION"]
+      },
+      "fixture": "guide-response.json",
+      "filterRules": "guide",
+      "expect": {
+        "blocked": [
+          { "channelId": "UC_BLOCKED_SUBSCRIPTION", "reason": "channelId match" }
+        ],
+        "allowed": [
+          { "channelId": "UC_SUBSCRIBED_CHANNEL_1" },
+          { "channelId": "UC_SUBSCRIBED_CHANNEL_2" }
+        ]
+      }
+    }
+  ]
+}
+

@@ -1,0 +1,148 @@
+{
+  "_meta": {
+    "description": "YouTube comments response fixture",
+    "source": "/youtubei/v1/next (comments section)",
+    "captured": "2024-01-15"
+  },
+  "frameworkUpdates": {
+    "entityBatchUpdate": {
+      "mutations": [
+        {
+          "payload": {
+            "commentEntityPayload": {
+              "properties": {
+                "commentId": "comment_normal_1",
+                "content": { "content": "Great video, thanks for sharing!" }
+              },
+              "author": {
+                "channelId": "UC_NORMAL_USER_1",
+                "displayName": "Normal User"
+              }
+            }
+          }
+        },
+        {
+          "payload": {
+            "commentEntityPayload": {
+              "properties": {
+                "commentId": "comment_spam_1",
+                "content": { "content": "BUY NOW cheap products at spam-site.com!!!" }
+              },
+              "author": {
+                "channelId": "UC_SPAMMER",
+                "displayName": "Spammer Account"
+              }
+            }
+          }
+        },
+        {
+          "payload": {
+            "commentEntityPayload": {
+              "properties": {
+                "commentId": "comment_normal_2",
+                "content": { "content": "I learned something new today." }
+              },
+              "author": {
+                "channelId": "UC_NORMAL_USER_2",
+                "displayName": "Another User"
+              }
+            }
+          }
+        },
+        {
+          "payload": {
+            "commentEntityPayload": {
+              "properties": {
+                "commentId": "comment_blocked_user",
+                "content": { "content": "This is a normal comment from blocked user." }
+              },
+              "author": {
+                "channelId": "UC_BLOCKED_COMMENTER",
+                "displayName": "Blocked Commenter"
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "contents": {
+    "twoColumnWatchNextResults": {
+      "results": {
+        "results": {
+          "contents": [
+            {
+              "itemSectionRenderer": {
+                "contents": [
+                  {
+                    "commentThreadRenderer": {
+                      "commentViewModel": {
+                        "commentViewModel": {
+                          "commentId": "comment_normal_1"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "commentThreadRenderer": {
+                      "commentViewModel": {
+                        "commentViewModel": {
+                          "commentId": "comment_spam_1"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "commentThreadRenderer": {
+                      "commentViewModel": {
+                        "commentViewModel": {
+                          "commentId": "comment_normal_2"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "commentThreadRenderer": {
+                      "commentViewModel": {
+                        "commentViewModel": {
+                          "commentId": "comment_blocked_user"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "onResponseReceivedEndpoints": [
+    {
+      "reloadContinuationItemsCommand": {
+        "continuationItems": [
+          {
+            "commentRenderer": {
+              "authorEndpoint": {
+                "browseEndpoint": { "browseId": "UC_LEGACY_USER" }
+              },
+              "authorText": { "simpleText": "Legacy User" },
+              "contentText": { "runs": [{ "text": "Old format comment" }] }
+            }
+          },
+          {
+            "commentRenderer": {
+              "authorEndpoint": {
+                "browseEndpoint": { "browseId": "UC_BLOCKED_LEGACY" }
+              },
+              "authorText": { "simpleText": "Blocked Legacy User" },
+              "contentText": { "runs": [{ "text": "Comment from blocked user" }] }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
+

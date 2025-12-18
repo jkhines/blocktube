@@ -1,0 +1,135 @@
+{
+  "_meta": {
+    "description": "YouTube search results response fixture",
+    "source": "/youtubei/v1/search",
+    "captured": "2024-01-15"
+  },
+  "contents": {
+    "twoColumnSearchResultsRenderer": {
+      "primaryContents": {
+        "sectionListRenderer": {
+          "contents": [
+            {
+              "itemSectionRenderer": {
+                "contents": [
+                  {
+                    "videoRenderer": {
+                      "videoId": "dQw4w9WgXcQ",
+                      "title": {
+                        "runs": [{ "text": "Rick Astley - Never Gonna Give You Up" }]
+                      },
+                      "descriptionSnippet": {
+                        "runs": [{ "text": "The official video for Rick Astley's classic song." }]
+                      },
+                      "shortBylineText": {
+                        "runs": [{
+                          "text": "Rick Astley",
+                          "navigationEndpoint": {
+                            "browseEndpoint": { "browseId": "UCuAXFkgsw1L7xaCfnd5JJOw" }
+                          }
+                        }]
+                      },
+                      "thumbnailOverlays": [{
+                        "thumbnailOverlayTimeStatusRenderer": {
+                          "text": { "simpleText": "3:33" }
+                        }
+                      }],
+                      "viewCountText": { "simpleText": "1.5B views" },
+                      "publishedTimeText": { "simpleText": "14 years ago" }
+                    }
+                  },
+                  {
+                    "videoRenderer": {
+                      "videoId": "BLOCKED_VIDEO_001",
+                      "title": {
+                        "runs": [{ "text": "This Video Should Be Blocked" }]
+                      },
+                      "descriptionSnippet": {
+                        "runs": [{ "text": "This description contains BLOCKED_KEYWORD that should trigger blocking." }]
+                      },
+                      "shortBylineText": {
+                        "runs": [{
+                          "text": "Blocked Channel",
+                          "navigationEndpoint": {
+                            "browseEndpoint": { "browseId": "UC_BLOCKED_CHANNEL" }
+                          }
+                        }]
+                      },
+                      "thumbnailOverlays": [{
+                        "thumbnailOverlayTimeStatusRenderer": {
+                          "text": { "simpleText": "10:00" }
+                        }
+                      }],
+                      "viewCountText": { "simpleText": "100K views" }
+                    }
+                  },
+                  {
+                    "videoRenderer": {
+                      "videoId": "abc123normal",
+                      "title": {
+                        "runs": [{ "text": "Normal Allowed Video" }]
+                      },
+                      "descriptionSnippet": {
+                        "runs": [{ "text": "A normal video description with no blocked keywords." }]
+                      },
+                      "shortBylineText": {
+                        "runs": [{
+                          "text": "Good Channel",
+                          "navigationEndpoint": {
+                            "browseEndpoint": { "browseId": "UC_GOOD_CHANNEL" }
+                          }
+                        }]
+                      },
+                      "thumbnailOverlays": [{
+                        "thumbnailOverlayTimeStatusRenderer": {
+                          "text": { "simpleText": "5:30" }
+                        }
+                      }],
+                      "viewCountText": { "simpleText": "50K views" }
+                    }
+                  },
+                  {
+                    "videoRenderer": {
+                      "videoId": "short_video_123",
+                      "title": {
+                        "runs": [{ "text": "Very Short Video" }]
+                      },
+                      "shortBylineText": {
+                        "runs": [{
+                          "text": "Short Creator",
+                          "navigationEndpoint": {
+                            "browseEndpoint": { "browseId": "UC_SHORT_CREATOR" }
+                          }
+                        }]
+                      },
+                      "thumbnailOverlays": [{
+                        "thumbnailOverlayTimeStatusRenderer": {
+                          "text": { "simpleText": "0:15" }
+                        }
+                      }]
+                    }
+                  },
+                  {
+                    "radioRenderer": {
+                      "playlistId": "RDMIX123",
+                      "title": { "simpleText": "Mix - Popular Songs" },
+                      "shortBylineText": { "simpleText": "YouTube" }
+                    }
+                  },
+                  {
+                    "channelRenderer": {
+                      "channelId": "UC_SOME_CHANNEL",
+                      "title": { "simpleText": "Some Channel" },
+                      "subscriberCountText": { "simpleText": "1M subscribers" }
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+

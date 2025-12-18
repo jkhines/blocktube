@@ -1,0 +1,57 @@
+{
+  "name": "Comment Blocking",
+  "description": "Test blocking comments by content and user",
+  "tests": [
+    {
+      "name": "Block spam comments by keyword",
+      "filters": {
+        "comment": ["/BUY NOW/i", "/spam/i"]
+      },
+      "fixture": "comments-response.json",
+      "filterRules": "comments",
+      "expect": {
+        "blocked": [
+          { "channelId": "UC_SPAMMER", "reason": "comment contains BUY NOW" }
+        ],
+        "allowed": [
+          { "channelId": "UC_NORMAL_USER_1" },
+          { "channelId": "UC_NORMAL_USER_2" }
+        ]
+      }
+    },
+    {
+      "name": "Block comments by user channel ID",
+      "filters": {
+        "channelId": ["UC_BLOCKED_COMMENTER"]
+      },
+      "fixture": "comments-response.json",
+      "filterRules": "comments",
+      "expect": {
+        "blocked": [
+          { "channelId": "UC_BLOCKED_COMMENTER", "reason": "channelId match" }
+        ],
+        "allowed": [
+          { "channelId": "UC_NORMAL_USER_1" },
+          { "channelId": "UC_NORMAL_USER_2" }
+        ]
+      }
+    },
+    {
+      "name": "Block legacy format comments",
+      "filters": {
+        "channelId": ["UC_BLOCKED_LEGACY"]
+      },
+      "fixture": "comments-response.json",
+      "filterRules": "comments",
+      "expect": {
+        "blocked": [
+          { "channelId": "UC_BLOCKED_LEGACY", "reason": "legacy commentRenderer blocked" }
+        ],
+        "allowed": [
+          { "channelId": "UC_LEGACY_USER" }
+        ]
+      }
+    }
+  ]
+}
+

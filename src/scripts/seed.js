@@ -40,15 +40,15 @@
     return new Proxy({}, getHandler(path, path.length == 1));
   }
 
-  // need to filter following XHR requests
-  const spf_uris = [
+  // need to filter following XHR requests - use Set for O(1) lookup
+  const spf_uris = new Set([
     '/browse_ajax',
     '/related_ajax',
     '/service_ajax',
     '/list_ajax',
     '/guide_ajax',
     '/live_chat/get_live_chat',
-  ];
+  ]);
 
   const fetch_uris = [
     '/youtubei/v1/search',
@@ -99,7 +99,7 @@
 
   function isUrlMatch(url) {
     if (!(url instanceof URL)) url = new URL(url);
-    return spf_uris.some(uri => uri === url.pathname) || url.searchParams.has('pbj');
+    return spf_uris.has(url.pathname) || url.searchParams.has('pbj');
   }
 
   function onPart(url, next) {
@@ -135,24 +135,37 @@
   // Youtube started using vanilla "fetch" for some endpoints (search and guide for now) :\
   // I'm forced to hook that one too
   const org_fetch = window.fetch;
+  // Convert to Set for O(1) lookups
+  const fetch_uris_set = new Set(fetch_uris);
+  
+  // Helper to check if URL matches any fetch URI
+  function matchesFetchUri(url) {
+    for (const uri of fetch_uris_set) {
+      if (url.includes(uri)) return true;
+    }
+    return false;
+  }
+  
   window.fetch = function(resource, init=undefined) {
-    if (!(resource instanceof Request) || !fetch_uris.some(u => resource.url.includes(u))) {
+    if (!(resource instanceof Request) || !matchesFetchUri(resource.url)) {
       return org_fetch(resource, init);
     }
 
-    return new Promise((resolve, reject) => {
-      org_fetch(resource, init=init).then(function(resp) {
-          const url = new URL(resource.url);
-          resp.json().then(function (jsonResp) {
-            if(window.btDispatched) {
-              window.btExports.fetchFilter(url, jsonResp);
-              resolve(new Response(JSON.stringify(jsonResp)));
-            } else window.addEventListener('blockTubeReady', () => {
+    return org_fetch(resource, init).then(function(resp) {
+      const url = new URL(resource.url);
+      return resp.json().then(function(jsonResp) {
+        if (window.btDispatched) {
+          window.btExports.fetchFilter(url, jsonResp);
+        } else {
+          return new Promise(resolve => {
+            window.addEventListener('blockTubeReady', () => {
               window.btExports.fetchFilter(url, jsonResp);
               resolve(new Response(JSON.stringify(jsonResp)));
             });
-          }).catch(reject);
-      }).catch(reject);
+          });
+        }
+        return new Response(JSON.stringify(jsonResp));
+      });
     });
   }
 
@@ -160,7 +173,7 @@
     const XMLHttpRequestResponse = Object.getOwnPropertyDescriptor(XMLHttpRequest.prototype, 'response');
     Object.defineProperty(XMLHttpRequest.prototype, 'response', {
       get: function() {
-        if(!fetch_uris.some(u => this.responseURL.includes(u))) {
+        if (!matchesFetchUri(this.responseURL)) {
           return XMLHttpRequestResponse.get.call(this);
         }
         let res = JSON.parse(XMLHttpRequestResponse.get.call(this).replace(')]}\'', ''));

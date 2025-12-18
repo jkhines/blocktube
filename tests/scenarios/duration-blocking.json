@@ -1,0 +1,82 @@
+{
+  "name": "Duration-Based Blocking",
+  "description": "Test blocking videos by length and percent watched",
+  "tests": [
+    {
+      "name": "Block videos shorter than 1 minute",
+      "filters": {
+        "vidLength": [60, null]
+      },
+      "options": {
+        "vidLength_type": "allow"
+      },
+      "fixture": "search-response.json",
+      "expect": {
+        "blocked": [
+          { "videoId": "short_video_123", "reason": "duration 0:15 < 60s minimum" }
+        ],
+        "allowed": [
+          { "videoId": "dQw4w9WgXcQ", "note": "3:33 = 213s" },
+          { "videoId": "BLOCKED_VIDEO_001", "note": "10:00 = 600s" },
+          { "videoId": "abc123normal", "note": "5:30 = 330s" }
+        ]
+      }
+    },
+    {
+      "name": "Block videos longer than 5 minutes",
+      "filters": {
+        "vidLength": [null, 300]
+      },
+      "options": {
+        "vidLength_type": "allow"
+      },
+      "fixture": "search-response.json",
+      "expect": {
+        "blocked": [
+          { "videoId": "BLOCKED_VIDEO_001", "reason": "duration 10:00 > 300s maximum" },
+          { "videoId": "abc123normal", "reason": "duration 5:30 > 300s maximum" }
+        ],
+        "allowed": [
+          { "videoId": "dQw4w9WgXcQ", "note": "3:33 = 213s" },
+          { "videoId": "short_video_123", "note": "0:15 = 15s" }
+        ]
+      }
+    },
+    {
+      "name": "Block videos in specific duration range",
+      "filters": {
+        "vidLength": [60, 300]
+      },
+      "options": {
+        "vidLength_type": "block"
+      },
+      "fixture": "search-response.json",
+      "expect": {
+        "blocked": [
+          { "videoId": "dQw4w9WgXcQ", "reason": "duration 213s in blocked range 60-300s" }
+        ],
+        "allowed": [
+          { "videoId": "short_video_123", "note": "15s < 60s" },
+          { "videoId": "BLOCKED_VIDEO_001", "note": "600s > 300s" },
+          { "videoId": "abc123normal", "note": "330s > 300s" }
+        ]
+      }
+    },
+    {
+      "name": "Block mostly watched videos",
+      "options": {
+        "percent_watched_hide": 90
+      },
+      "fixture": "browse-response.json",
+      "expect": {
+        "blocked": [
+          { "videoId": "mostly_watched_video", "reason": "95% watched >= 90% threshold" }
+        ],
+        "allowed": [
+          { "videoId": "allowed_home_video" }
+        ]
+      }
+    }
+  ]
+}
+

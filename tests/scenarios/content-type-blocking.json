@@ -1,0 +1,69 @@
+{
+  "name": "Content Type Blocking",
+  "description": "Test blocking shorts, movies, mixes, and trending",
+  "tests": [
+    {
+      "name": "Block mixes",
+      "options": {
+        "mixes": true
+      },
+      "fixture": "search-response.json",
+      "expect": {
+        "blocked": [
+          { "type": "radioRenderer", "reason": "mixes option enabled" }
+        ],
+        "allowed": [
+          { "videoId": "dQw4w9WgXcQ" },
+          { "videoId": "abc123normal" }
+        ]
+      }
+    },
+    {
+      "name": "Block shorts in recommendations",
+      "options": {
+        "shorts": true
+      },
+      "fixture": "next-response.json",
+      "expect": {
+        "blocked": [
+          { "videoId": "short_recommended", "reason": "SHORTS duration" }
+        ],
+        "allowed": [
+          { "videoId": "recommended_1" },
+          { "videoId": "recommended_2" }
+        ]
+      }
+    },
+    {
+      "name": "Block movies on home page",
+      "options": {
+        "movies": true
+      },
+      "fixture": "browse-response.json",
+      "expect": {
+        "blocked": [
+          { "videoId": "movie_123", "type": "movieRenderer" }
+        ],
+        "allowed": [
+          { "videoId": "allowed_home_video" }
+        ]
+      }
+    },
+    {
+      "name": "Block mix recommendations",
+      "options": {
+        "mixes": true
+      },
+      "fixture": "next-response.json",
+      "expect": {
+        "blocked": [
+          { "type": "compactRadioRenderer", "reason": "mixes option enabled" }
+        ],
+        "allowed": [
+          { "videoId": "recommended_1" }
+        ]
+      }
+    }
+  ]
+}
+

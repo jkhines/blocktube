@@ -1,0 +1,52 @@
+{
+  "name": "blocktube",
+  "version": "1.0.0",
+  "description": "YouTube content filter browser extension",
+  "private": true,
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "testEnvironmentOptions": {
+      "url": "https://www.youtube.com/"
+    },
+    "roots": [
+      "<rootDir>/tests"
+    ],
+    "setupFilesAfterEnv": [
+      "<rootDir>/tests/setup.js"
+    ],
+    "collectCoverageFrom": [
+      "src/scripts/**/*.js",
+      "!src/scripts/seed.js"
+    ],
+    "coverageThreshold": {
+      "./src/scripts/background.js": {
+        "branches": 60,
+        "functions": 70,
+        "lines": 75,
+        "statements": 75
+      },
+      "./src/scripts/content_script.js": {
+        "branches": 35,
+        "functions": 75,
+        "lines": 55,
+        "statements": 55
+      }
+    },
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ],
+    "moduleFileExtensions": [
+      "js"
+    ]
+  }
+}
+

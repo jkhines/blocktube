@@ -110,8 +110,8 @@
   // TODO: hack for blocking data in other objects
   let currentBlock = false;
 
-  // add context menu to following objects
-  const contextMenuObjects = [
+  // add context menu to following objects - use Set for O(1) lookup
+  const contextMenuObjectsList = [
     'backstagePostRenderer',
     'postRenderer',
     'movieRenderer',
@@ -129,9 +129,10 @@
     'slimVideoMetadataSectionRenderer',
     'videoWithContextRenderer'
   ];
+  const contextMenuObjects = new Set(contextMenuObjectsList);
 
-  // those properties can be safely deleted when one of thier child got filtered
-  const deleteAllowed = [
+  // those properties can be safely deleted when one of their child got filtered - use Set for O(1) lookup
+  const deleteAllowed = new Set([
     'richItemRenderer',
     'content',
     'horizontalListRenderer',
@@ -144,16 +145,18 @@
     'commentThreadRenderer',
     'reelShelfRenderer',
     'richSectionRenderer'
-  ];
+  ]);
 
-  // those filter properties require RegExp checking
-  const regexProps = [
+  // those filter properties require RegExp checking - use Set for O(1) lookup
+  const regexPropsSet = new Set([
     'videoId',
     'channelId',
     'channelName',
     'title',
     'comment',
-  ];
+    'description',
+  ]);
+  const regexProps = ['videoId', 'channelId', 'channelName', 'title', 'comment', 'description'];
 
   // TODO: add rules descriptions
   // !! Filter Rules definitions
@@ -166,6 +169,7 @@
       'longBylineText',
     ],
     title: ['title'],
+    description: ['descriptionSnippet'],
     vidLength: ['thumbnailOverlays.thumbnailOverlayTimeStatusRenderer.text'],
     viewCount: [
         'viewCountText'
@@ -492,37 +496,64 @@
     return !jsFilterEnabled;
   };
 
+  // Cache for pathname checks to avoid repeated string operations
+  const historyPaths = new Set(['/feed/history', '/feed/library', '/playlist']);
+
   ObjectFilter.prototype.matchFilterData = function (filters, obj, objectType) {
-    const friendlyVideoObj = {};
+    const friendlyVideoObj = jsFilterEnabled ? {} : null;
+    const currentPath = document.location.pathname;
 
-    if (document.location.pathname === '/feed/history' && storageData.options.disable_on_history) return false;
+    if (currentPath === '/feed/history' && storageData.options.disable_on_history) return false;
 
-    let doBlock = Object.keys(filters).some((h) => {
+    let doBlock = false;
+    const filterKeys = Object.keys(filters);
+    
+    for (let i = 0; i < filterKeys.length; i++) {
+      const h = filterKeys[i];
       const filterPath = filters[h];
-      if (filterPath === undefined) return false;
+      if (filterPath === undefined) continue;
 
       const properties = storageData.filterData[h];
-      if (regexProps.includes(h) && (properties === undefined || properties.length === 0 && !jsFilterEnabled)) return false;
+      const isRegexProp = regexPropsSet.has(h);
+      if (isRegexProp && (properties === undefined || (properties.length === 0 && !jsFilterEnabled))) continue;
 
       let value = getFlattenByPath(obj, filterPath);
-      if (value === undefined) return false;
+      if (value === undefined) continue;
 
-      if (h === 'percentWatched' && storageData.options.percent_watched_hide && objectType != 'playlistPanelVideoRenderer'
-           && !['/feed/history', '/feed/library', '/playlist'].includes(document.location.pathname)
-           && parseInt(value) >= storageData.options.percent_watched_hide) return true;
+      if (h === 'percentWatched' && storageData.options.percent_watched_hide && objectType !== 'playlistPanelVideoRenderer'
+           && !historyPaths.has(currentPath)
+           && parseInt(value) >= storageData.options.percent_watched_hide) {
+        doBlock = true;
+        break;
+      }
 
-      if (regexProps.includes(h) && properties.some(prop => prop && prop.test(value))) return true;
+      if (isRegexProp) {
+        for (let j = 0; j < properties.length; j++) {
+          if (properties[j] && properties[j].test(value)) {
+            doBlock = true;
+            break;
+          }
+        }
+        if (doBlock) break;
+      }
 
       if (h === 'vidLength') {
         const vidLen = parseTime(value);
         if (vidLen === -2 && storageData.options.shorts) {
-          return true;
+          doBlock = true;
+          break;
         }
         if (vidLen > 0 && properties.length === 2) {
           if (storageData.options.vidLength_type === 'block') {
-            if ((properties[0] !== null && vidLen >= properties[0]) && (properties[1] !== null && vidLen <= properties[1])) return true;
+            if ((properties[0] !== null && vidLen >= properties[0]) && (properties[1] !== null && vidLen <= properties[1])) {
+              doBlock = true;
+              break;
+            }
           } else {
-            if ((properties[0] !== null && vidLen < properties[0]) || (properties[1] !== null && vidLen > properties[1])) return true;
+            if ((properties[0] !== null && vidLen < properties[0]) || (properties[1] !== null && vidLen > properties[1])) {
+              doBlock = true;
+              break;
+            }
           }
         }
         value = vidLen;
@@ -533,31 +564,21 @@
           value = parseViewCount(value);
         } else if (h === 'channelBadges' || h === 'badges') {
           const badges = [];
-          value.forEach(br => {
-            /* Channels */
-            if (br.metadataBadgeRenderer.style === "BADGE_STYLE_TYPE_VERIFIED") {
-              badges.push("verified");
-            } else if (br.metadataBadgeRenderer.style === "BADGE_STYLE_TYPE_VERIFIED_ARTIST") {
-              badges.push("artist");
-            }
-            /* Videos */
-            else if (br.metadataBadgeRenderer.style === "BADGE_STYLE_TYPE_LIVE_NOW") {
-              badges.push("live");
-            }
-            else if (br.metadataBadgeRenderer.style === "BADGE_STYLE_TYPE_MEMBERS_ONLY") { 
-              badges.push("members"); 
-            }
-          });
+          const valueLen = value.length;
+          for (let k = 0; k < valueLen; k++) {
+            const style = value[k].metadataBadgeRenderer.style;
+            if (style === "BADGE_STYLE_TYPE_VERIFIED") badges.push("verified");
+            else if (style === "BADGE_STYLE_TYPE_VERIFIED_ARTIST") badges.push("artist");
+            else if (style === "BADGE_STYLE_TYPE_LIVE_NOW") badges.push("live");
+            else if (style === "BADGE_STYLE_TYPE_MEMBERS_ONLY") badges.push("members");
+          }
           value = badges;
         }
         friendlyVideoObj[h] = value;
       }
-
-      return false;
-    });
+    }
 
     if (!doBlock && jsFilterEnabled) {
-      // force return value into boolean just in case someone tries returning something else
       try {
         doBlock = !!jsFilter(friendlyVideoObj, objectType);
       } catch (e) {
@@ -602,35 +623,31 @@
   ObjectFilter.prototype.matchFilterRule = function (obj) {
     if (this.isDataEmpty()) return [];
 
-    return Object.keys(this.filterRules).reduce((res, h) => {
-      let properties;
-      let customFunc;
-      let related;
+    const res = [];
+    const ruleKeys = Object.keys(this.filterRules);
+    const ruleLen = ruleKeys.length;
+    
+    for (let i = 0; i < ruleLen; i++) {
+      const h = ruleKeys[i];
       const filteredObject = obj[h];
+      if (!filteredObject) continue;
 
-      if (filteredObject) {
-        const filterRule = this.filterRules[h];
-        if (has.call(filterRule, 'properties')) {
-          properties = filterRule.properties;
-          customFunc = filterRule.customFunc;
-          related = filterRule.related;
-        } else {
-          properties = filterRule;
-          customFunc = undefined;
-          related = undefined;
-        }
-
-        const isMatch = this.isExtendedMatched(filteredObject, h) || this.matchFilterData(properties, filteredObject, h);
-        if (isMatch) {
-          res.push({
-            name: h,
-            customFunc,
-            related,
-          });
-        }
+      const filterRule = this.filterRules[h];
+      let properties, customFunc, related;
+      
+      if (has.call(filterRule, 'properties')) {
+        properties = filterRule.properties;
+        customFunc = filterRule.customFunc;
+        related = filterRule.related;
+      } else {
+        properties = filterRule;
       }
-      return res;
-    }, []);
+
+      if (this.isExtendedMatched(filteredObject, h) || this.matchFilterData(properties, filteredObject, h)) {
+        res.push({ name: h, customFunc, related });
+      }
+    }
+    return res;
   };
 
   ObjectFilter.prototype.filter = function (obj = this.object) {
@@ -643,7 +660,8 @@
 
     // object filtering
     const matchedRules = this.matchFilterRule(obj);
-    matchedRules.forEach((r) => {
+    for (let ri = 0, rlen = matchedRules.length; ri < rlen; ri++) {
+      const r = matchedRules[ri];
       let customRet = true;
       if (r.customFunc !== undefined) {
         customRet = r.customFunc.call(this, obj, r.name);
@@ -652,7 +670,7 @@
         delete obj[r.name];
         deletePrev = r.related || true;
       }
-    });
+    }
 
     let len = 0;
     let keys;
@@ -686,8 +704,8 @@
       // if next child is an empty array that we filtered, mark parent for removal.
       if (obj[idx] instanceof Array && obj[idx].length === 0 && childDel) {
         deletePrev = true;
-      } else if (childDel && deleteAllowed.includes(idx)) {
-        // special childs that needs removing if they're empty
+      } else if (childDel && deleteAllowed.has(idx)) {
+        // special children that need removing if they're empty
         delete obj[idx];
         deletePrev = true;
       }
@@ -909,14 +927,23 @@
 
   function flattenRuns(arr) {
     if (arr.simpleText !== undefined) return arr.simpleText;
-    if (!(arr.runs instanceof Array)) return arr;
-    return arr.runs.reduce((res, v) => {
-      if (has.call(v, 'text')) {
-        res.push(v.text);
+    const runs = arr.runs;
+    if (!Array.isArray(runs)) return arr;
+    
+    const len = runs.length;
+    if (len === 0) return '';
+    if (len === 1) return runs[0].text || '';
+    
+    let result = '';
+    for (let i = 0; i < len; i++) {
+      const v = runs[i];
+      if (v.text) {
+        if (result) result += ' ';
+        result += v.text;
       }
-      return res;
-    }, []).join(' ');
-  };
+    }
+    return result;
+  }
 
   function getFlattenByPath(obj, filterPath) {
     if (filterPath === undefined) return;
@@ -932,50 +959,60 @@
     window.postMessage({ from: 'BLOCKTUBE_PAGE', type, data }, document.location.origin);
   }
 
+  // Regex for bracket notation - compiled once
+  const bracketRegex = /\[.*\]/;
+  const baseMatchRegex = /^([^\[]+)/;
+  const idxMatchRegex = /\[(\d+)\]/g;
+
   function getObjectByPath(obj, path, def = undefined) {
-    const paths = (path instanceof Array) ? path : path.split('.');
+    if (!obj || !path) return def;
+    
+    const paths = Array.isArray(path) ? path : path.split('.');
     let nextObj = obj;
+    const pathLen = paths.length;
 
-    const exist = paths.every((v) => {
+    for (let i = 0; i < pathLen; i++) {
+      const v = paths[i];
+      
       // support bracket/index notation like "metadataRows[1]"
-      if (/\[.*\]/.test(v)) {
-        // split base name and all numeric indices like "a[1][2]"
-        const parts = [];
-        const baseMatch = v.match(/^([^\[]+)/);
-        if (baseMatch && baseMatch[1]) parts.push(baseMatch[1]);
-        const idxMatches = [...v.matchAll(/\[(\d+)\]/g)].map(m => parseInt(m[1], 10));
-
-        // navigate to base property first (if present)
-        for (let p = 0; p < parts.length; p += 1) {
-          const key = parts[p];
-          if (!nextObj || !has.call(nextObj, key)) return false;
+      if (bracketRegex.test(v)) {
+        const baseMatch = v.match(baseMatchRegex);
+        if (baseMatch && baseMatch[1]) {
+          const key = baseMatch[1];
+          if (!nextObj || !has.call(nextObj, key)) return def;
           nextObj = nextObj[key];
         }
 
-        // then apply numeric indices in order
-        for (let k = 0; k < idxMatches.length; k += 1) {
-          const idx = idxMatches[k];
-          if (!Array.isArray(nextObj) || idx < 0 || idx >= nextObj.length) return false;
+        // Reset lastIndex and find all numeric indices
+        idxMatchRegex.lastIndex = 0;
+        let match;
+        while ((match = idxMatchRegex.exec(v)) !== null) {
+          const idx = parseInt(match[1], 10);
+          if (!Array.isArray(nextObj) || idx < 0 || idx >= nextObj.length) return def;
           nextObj = nextObj[idx];
         }
-
-        return true;
+        continue;
       }
 
       // segment is a plain token (no bracket)
-      if (nextObj instanceof Array) {
+      if (Array.isArray(nextObj)) {
         // when we have an array of objects, find an element that contains the key v
-        const found = nextObj.find(o => has.call(o, v));
-        if (found === undefined) return false;
+        let found = undefined;
+        for (let j = 0, len = nextObj.length; j < len; j++) {
+          if (has.call(nextObj[j], v)) {
+            found = nextObj[j];
+            break;
+          }
+        }
+        if (found === undefined) return def;
         nextObj = found[v];
       } else {
-        if (!nextObj || !has.call(nextObj, v)) return false;
+        if (!nextObj || !has.call(nextObj, v)) return def;
         nextObj = nextObj[v];
       }
-      return true;
-    });
+    }
 
-    return exist ? nextObj : def;
+    return nextObj;
   }
 
   function parseTime(timeStr) {
@@ -1027,18 +1064,24 @@
 
   function transformToRegExp(data) {
     if (!has.call(data, 'filterData')) return;
-    regexProps.forEach((p) => {
-      if (has.call(data.filterData, p)) {
-        data.filterData[p] = data.filterData[p].map((v) => {
+    const filterData = data.filterData;
+    for (let i = 0, len = regexProps.length; i < len; i++) {
+      const p = regexProps[i];
+      if (has.call(filterData, p)) {
+        const arr = filterData[p];
+        const result = new Array(arr.length);
+        for (let j = 0, jlen = arr.length; j < jlen; j++) {
+          const v = arr[j];
           try {
-            return RegExp(v[0], v[1].replace('g', ''));
+            result[j] = new RegExp(v[0], v[1].replace('g', ''));
           } catch (e) {
             console.error(`RegExp parsing error: /${v[0]}/${v[1]}`);
-            return undefined;
+            result[j] = undefined;
           }
-        });
+        }
+        filterData[p] = result;
       }
-    });
+    }
   }
 
   function playerMiscFilters() {
@@ -1062,11 +1105,12 @@
         audioConfig.enablePerFormatLoudness = false;
       }
       const streamConfig = getObjectByPath(start_obj, 'streamingData.adaptiveFormats', []);
-      streamConfig.forEach((conf) => {
-          if (conf.loudnessDb !== undefined) {
-            conf.loudnessDb = 0.0;
-          }
-      })
+      for (let i = 0, len = streamConfig.length; i < len; i++) {
+        const conf = streamConfig[i];
+        if (conf.loudnessDb !== undefined) {
+          conf.loudnessDb = 0.0;
+        }
+      }
     }
   }
 
@@ -1093,9 +1137,12 @@
     if (storageData === undefined) return;
 
     let ytDataArr = resp.part || resp.response.parts || resp.response;
-    ytDataArr = (ytDataArr instanceof Array) ? ytDataArr : [ytDataArr];
+    ytDataArr = Array.isArray(ytDataArr) ? ytDataArr : [ytDataArr];
 
-    ytDataArr.forEach((obj) => {
+    const pathname = url.pathname;
+    for (let i = 0, len = ytDataArr.length; i < len; i++) {
+      const obj = ytDataArr[i];
+      
       if (has.call(obj, 'player')) {
         try {
           const player_resp = getObjectByPath(obj.player, 'args.player_response');
@@ -1111,7 +1158,7 @@
       if (has.call(obj, 'response') || has.call(obj, 'data')) {
         let rules;
         let postActions = [];
-        switch (url.pathname) {
+        switch (pathname) {
           case '/guide_ajax':
             rules = filterRules.guide;
             break;
@@ -1127,7 +1174,7 @@
         }
         ObjectFilter(obj.response || obj.data, rules, postActions, true);
       }
-    });
+    }
   }
 
   function blockMixes(data) {
@@ -1212,7 +1259,7 @@
   }
 
   function addContextMenusMobile(obj) {
-    const attr = contextMenuObjects.find(e => has.call(obj, e));
+    const attr = contextMenuObjectsList.find(e => has.call(obj, e));
     if (attr === undefined) return;
 
     const parentData = obj[attr];
@@ -1505,7 +1552,7 @@
   }
 
   function findAndExtractMenuItems(obj) {
-    const attr = contextMenuObjects.find(e => Object.prototype.hasOwnProperty.call(obj, e));
+    const attr = contextMenuObjectsList.find(e => Object.prototype.hasOwnProperty.call(obj, e));
     if (!attr) return null;
 
     const result = extractMenuItems(obj, attr);
@@ -1642,9 +1689,22 @@
     };
   }
 
+  // Fast deep clone for plain objects without functions or cycles
   function deepClone(obj) {
-    // Simple deep clone (for plain objects, no functions/cycles)
-    return JSON.parse(JSON.stringify(obj));
+    if (obj === null || typeof obj !== 'object') return obj;
+    if (Array.isArray(obj)) {
+      const len = obj.length;
+      const arr = new Array(len);
+      for (let i = 0; i < len; i++) arr[i] = deepClone(obj[i]);
+      return arr;
+    }
+    const clone = {};
+    const keys = Object.keys(obj);
+    for (let i = 0, len = keys.length; i < len; i++) {
+      const key = keys[i];
+      clone[key] = deepClone(obj[key]);
+    }
+    return clone;
   }
 
   function addContextMenus(obj) {
@@ -2071,5 +2131,38 @@
     openToast,
     menuOnTap,
     menuOnTapMobile
+  }
+
+  // Export for testing (Node.js/Jest environment)
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+      // Utility functions
+      getObjectByPath,
+      getFlattenByPath,
+      flattenRuns,
+      parseTime,
+      parseViewCount,
+      deepClone,
+      transformToRegExp,
+      postMessage,
+      // ObjectFilter class
+      ObjectFilter,
+      // Filter rules and constants
+      filterRules,
+      mergedFilterRules,
+      regexProps,
+      regexPropsSet,
+      deleteAllowed,
+      contextMenuObjects,
+      contextMenuObjectsList,
+      // Functions for testing
+      blockMixes,
+      blockTrending,
+      blockShorts,
+      // Test helpers
+      _setStorageData: (data) => { storageData = data; },
+      _getStorageData: () => storageData,
+      _setJsFilter: (fn) => { jsFilter = fn; jsFilterEnabled = !!fn; },
+    };
   }
 }());

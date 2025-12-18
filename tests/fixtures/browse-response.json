@@ -1,0 +1,155 @@
+{
+  "_meta": {
+    "description": "YouTube home/browse page response fixture",
+    "source": "/youtubei/v1/browse",
+    "captured": "2024-01-15"
+  },
+  "contents": {
+    "twoColumnBrowseResultsRenderer": {
+      "tabs": [{
+        "tabRenderer": {
+          "content": {
+            "richGridRenderer": {
+              "contents": [
+                {
+                  "richItemRenderer": {
+                    "content": {
+                      "videoRenderer": {
+                        "videoId": "allowed_home_video",
+                        "title": { "runs": [{ "text": "Trending Tech News" }] },
+                        "descriptionSnippet": { "runs": [{ "text": "Latest updates on technology and gadgets." }] },
+                        "shortBylineText": {
+                          "runs": [{
+                            "text": "Tech News Daily",
+                            "navigationEndpoint": {
+                              "browseEndpoint": { "browseId": "UC_TECH_NEWS" }
+                            }
+                          }]
+                        },
+                        "thumbnailOverlays": [{
+                          "thumbnailOverlayTimeStatusRenderer": {
+                            "text": { "simpleText": "12:34" }
+                          }
+                        }],
+                        "viewCountText": { "simpleText": "500K views" },
+                        "publishedTimeText": { "simpleText": "2 days ago" }
+                      }
+                    }
+                  }
+                },
+                {
+                  "richItemRenderer": {
+                    "content": {
+                      "videoRenderer": {
+                        "videoId": "blocked_by_title",
+                        "title": { "runs": [{ "text": "SPAM CLICKBAIT BLOCKED KEYWORD" }] },
+                        "descriptionSnippet": { "runs": [{ "text": "Check out this SPONSOR content with promo codes!" }] },
+                        "shortBylineText": {
+                          "runs": [{
+                            "text": "Spammy Channel",
+                            "navigationEndpoint": {
+                              "browseEndpoint": { "browseId": "UC_SPAMMY" }
+                            }
+                          }]
+                        },
+                        "thumbnailOverlays": [{
+                          "thumbnailOverlayTimeStatusRenderer": {
+                            "text": { "simpleText": "8:00" }
+                          }
+                        }]
+                      }
+                    }
+                  }
+                },
+                {
+                  "richItemRenderer": {
+                    "content": {
+                      "videoRenderer": {
+                        "videoId": "mostly_watched_video",
+                        "title": { "runs": [{ "text": "Video You Already Watched" }] },
+                        "shortBylineText": {
+                          "runs": [{
+                            "text": "Some Creator",
+                            "navigationEndpoint": {
+                              "browseEndpoint": { "browseId": "UC_CREATOR" }
+                            }
+                          }]
+                        },
+                        "thumbnailOverlays": [
+                          {
+                            "thumbnailOverlayTimeStatusRenderer": {
+                              "text": { "simpleText": "10:00" }
+                            }
+                          },
+                          {
+                            "thumbnailOverlayResumePlaybackRenderer": {
+                              "percentDurationWatched": 95
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                },
+                {
+                  "richSectionRenderer": {
+                    "content": {
+                      "richShelfRenderer": {
+                        "title": { "runs": [{ "text": "Shorts" }] },
+                        "contents": [
+                          {
+                            "richItemRenderer": {
+                              "content": {
+                                "reelItemRenderer": {
+                                  "videoId": "shorts_video_1",
+                                  "headline": { "simpleText": "Funny Short #1" },
+                                  "navigationEndpoint": {
+                                    "reelWatchEndpoint": {
+                                      "overlay": {
+                                        "reelPlayerOverlayRenderer": {
+                                          "reelPlayerHeaderSupportedRenderers": {
+                                            "reelPlayerHeaderRenderer": {
+                                              "channelNavigationEndpoint": {
+                                                "browseEndpoint": { "browseId": "UC_SHORTS_CREATOR" }
+                                              },
+                                              "channelTitleText": { "simpleText": "Shorts Creator" }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                },
+                {
+                  "richItemRenderer": {
+                    "content": {
+                      "movieRenderer": {
+                        "videoId": "movie_123",
+                        "title": { "runs": [{ "text": "Some Movie Title" }] },
+                        "badges": [{ "metadataBadgeRenderer": { "style": "BADGE_STYLE_TYPE_YPC" } }],
+                        "thumbnailOverlays": [{
+                          "thumbnailOverlayTimeStatusRenderer": {
+                            "text": { "simpleText": "1:45:00" }
+                          }
+                        }]
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }]
+    }
+  }
+}
+
