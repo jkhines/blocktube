@@ -49,7 +49,18 @@
   };
 
   function connectToPort() {
-    port = chrome.runtime.connect();
+    // Check if extension context is still valid before attempting to connect.
+    if (!chrome.runtime?.id) {
+      return;
+    }
+
+    try {
+      port = chrome.runtime.connect();
+    } catch (e) {
+      // Extension context invalidated, stop attempting to reconnect.
+      return;
+    }
+
     // Listen for messages from background page
     port.onMessage.addListener((msg) => {
       switch (msg.type) {
@@ -72,6 +83,10 @@
     });
 
     port.onDisconnect.addListener(() => {
+      // Check if extension context is still valid before scheduling reconnect.
+      if (!chrome.runtime?.id) {
+        return;
+      }
       if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
         const delay = Math.min(BASE_RECONNECT_DELAY * Math.pow(2, reconnectAttempts), 30000);
         reconnectAttempts++;
