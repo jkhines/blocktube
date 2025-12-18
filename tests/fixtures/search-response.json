@@ -122,6 +122,33 @@
                       "title": { "simpleText": "Some Channel" },
                       "subscriberCountText": { "simpleText": "1M subscribers" }
                     }
+                  },
+                  {
+                    "videoRenderer": {
+                      "videoId": "NEW_FORMAT_BLOCKED",
+                      "title": {
+                        "runs": [{ "text": "Video with new description format" }]
+                      },
+                      "detailedMetadataSnippets": [{
+                        "snippetText": {
+                          "runs": [{ "text": "This uses the new format and contains BLOCKED_KEYWORD in description." }]
+                        }
+                      }],
+                      "shortBylineText": {
+                        "runs": [{
+                          "text": "New Format Channel",
+                          "navigationEndpoint": {
+                            "browseEndpoint": { "browseId": "UC_NEW_FORMAT" }
+                          }
+                        }]
+                      },
+                      "thumbnailOverlays": [{
+                        "thumbnailOverlayTimeStatusRenderer": {
+                          "text": { "simpleText": "8:45" }
+                        }
+                      }],
+                      "viewCountText": { "simpleText": "25K views" }
+                    }
                   }
                 ]
               }

@@ -156,7 +156,8 @@
     $('block_feedback').checked    = get('options.block_feedback', false, obj);
     $('enable_javascript').checked = get('options.enable_javascript', false, obj);
     $('block_message').value       = get('options.block_message', '', obj);
-    $('percent_watched_hide').value = get('options.percent_watched_hide', NaN, obj);
+    const percentWatched = get('options.percent_watched_hide', null, obj);
+    $('percent_watched_hide').value = (percentWatched !== null && !isNaN(percentWatched)) ? percentWatched : '';
 
     const jsContent = get('filterData.javascript', defaultJSFunction, obj);
     jsEditors['javascript'].setValue(jsContent);

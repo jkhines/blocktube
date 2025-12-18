@@ -10,7 +10,8 @@
       "fixture": "search-response.json",
       "expect": {
         "blocked": [
-          { "videoId": "BLOCKED_VIDEO_001", "reason": "description contains BLOCKED_KEYWORD" }
+          { "videoId": "BLOCKED_VIDEO_001", "reason": "description contains BLOCKED_KEYWORD (legacy format)" },
+          { "videoId": "NEW_FORMAT_BLOCKED", "reason": "description contains BLOCKED_KEYWORD (detailedMetadataSnippets format)" }
         ],
         "allowed": [
           { "videoId": "dQw4w9WgXcQ" },
@@ -50,4 +51,5 @@
     }
   ]
 }
+
 

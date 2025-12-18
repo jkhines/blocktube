@@ -169,7 +169,7 @@
       'longBylineText',
     ],
     title: ['title'],
-    description: ['descriptionSnippet'],
+    description: ['descriptionSnippet', 'detailedMetadataSnippets.snippetText'],
     vidLength: ['thumbnailOverlays.thumbnailOverlayTimeStatusRenderer.text'],
     viewCount: [
         'viewCountText'
