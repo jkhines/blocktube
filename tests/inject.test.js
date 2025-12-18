@@ -1419,3 +1419,106 @@ describe('Edge cases and error handling', () => {
   });
 });
 
+describe('parseViewCount enhanced tests', () => {
+  const { parseViewCount } = inject;
+
+  test('should handle view counts with commas correctly', () => {
+    expect(parseViewCount('1,234 views')).toBe(1234);
+    expect(parseViewCount('1,234,567 views')).toBe(1234567);
+  });
+
+  test('should handle abbreviated K views with decimal', () => {
+    expect(parseViewCount('1.5K views')).toBe(1500);
+    expect(parseViewCount('10K views')).toBe(10000);
+  });
+
+  test('should handle abbreviated M views with decimal', () => {
+    expect(parseViewCount('1.5M views')).toBe(1500000);
+    expect(parseViewCount('2.5M views')).toBe(2500000);
+  });
+
+  test('should handle abbreviated B views', () => {
+    expect(parseViewCount('1B views')).toBe(1000000000);
+    expect(parseViewCount('1.5B views')).toBe(1500000000);
+  });
+
+  test('should handle singular view', () => {
+    expect(parseViewCount('1 view')).toBe(1);
+  });
+
+  test('should return undefined for non-English formats', () => {
+    expect(parseViewCount('1000 vues')).toBeUndefined();
+    expect(parseViewCount('1000 просмотров')).toBeUndefined();
+  });
+
+  test('should handle views with commas and K abbreviation', () => {
+    // Edge case: commas with abbreviation shouldn't occur in real data
+    // but implementation should handle it gracefully
+    expect(parseViewCount('1,5K views')).toBe(15000); // Comma removed, becomes 15K
+  });
+});
+
+describe('Badge parsing with optional chaining', () => {
+  const { ObjectFilter, filterRules } = inject;
+
+  beforeEach(() => {
+    inject._setJsFilter((video) => {
+      // Custom filter to test badge parsing
+      return video.badges && video.badges.includes('verified');
+    });
+    inject._setStorageData({
+      filterData: {
+        videoId: [],
+        channelId: [],
+        channelName: [],
+        title: [],
+        comment: [],
+        description: [],
+        vidLength: [null, null],
+        javascript: ''
+      },
+      options: { enable_javascript: true }
+    });
+  });
+
+  afterEach(() => {
+    inject._setJsFilter(null);
+  });
+
+  test('should handle badges with missing metadataBadgeRenderer gracefully', () => {
+    const data = {
+      videoRenderer: {
+        videoId: 'vid123',
+        title: { simpleText: 'Test' },
+        badges: [
+          { otherRenderer: { style: 'SOME_STYLE' } }, // Missing metadataBadgeRenderer
+          null,
+          undefined
+        ]
+      }
+    };
+    // Should not throw
+    expect(() => ObjectFilter(data, filterRules.main)).not.toThrow();
+  });
+
+  test('should handle badges with valid metadataBadgeRenderer', () => {
+    inject._setJsFilter((video) => {
+      return video.badges && video.badges.includes('verified');
+    });
+    
+    const data = {
+      videoRenderer: {
+        videoId: 'vid123',
+        title: { simpleText: 'Test' },
+        badges: [
+          { metadataBadgeRenderer: { style: 'BADGE_STYLE_TYPE_VERIFIED' } }
+        ]
+      }
+    };
+    
+    ObjectFilter(data, filterRules.main);
+    // Video should be filtered because it has verified badge and our filter returns true
+    expect(data.videoRenderer).toBeUndefined();
+  });
+});
+

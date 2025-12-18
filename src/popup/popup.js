@@ -46,9 +46,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // Listen for changes to the switch
   checkbox.addEventListener("change", (event) => {
     if (event.target instanceof HTMLInputElement) {
-      console.log({enabled: !!event.target.checked})
-        chrome.storage.local.set({enabled: !!event.target.checked});
-        chrome.tabs.reload(); // Reload page to apply the new state
+      chrome.storage.local.set({enabled: !!event.target.checked});
+      // Reload the active tab to apply the new state
+      chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+        if (tabs[0]) chrome.tabs.reload(tabs[0].id);
+      });
     }
   });
 

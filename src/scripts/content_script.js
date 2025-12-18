@@ -5,6 +5,9 @@
   let globalStorage;
   let compiledStorage;
   let enabled;
+  let reconnectAttempts = 0;
+  const MAX_RECONNECT_ATTEMPTS = 5;
+  const BASE_RECONNECT_DELAY = 1000;
   
   // Cache the origin once
   const origin = document.location.origin;
@@ -69,8 +72,11 @@
     });
 
     port.onDisconnect.addListener(() => {
-      connectToPort();
-      
+      if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+        const delay = Math.min(BASE_RECONNECT_DELAY * Math.pow(2, reconnectAttempts), 30000);
+        reconnectAttempts++;
+        setTimeout(connectToPort, delay);
+      }
     });
   }
 

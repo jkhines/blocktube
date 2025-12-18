@@ -166,6 +166,9 @@
         }
         return new Response(JSON.stringify(jsonResp));
       });
+    }).catch(function(err) {
+      console.error('BlockTube fetch interception error:', err);
+      return org_fetch(resource, init);
     });
   }
 

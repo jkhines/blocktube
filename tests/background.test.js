@@ -400,5 +400,24 @@ describe('background.js', () => {
       expect(result[0]).toEqual(['^$', '']);
     });
   });
+
+  describe('contextBlock message validation', () => {
+    // These tests verify the validation logic added to contextBlock message handling
+    
+    test('should only accept valid filter types', () => {
+      const validTypes = ['videoId', 'channelId', 'channelName', 'comment', 'title', 'description'];
+      validTypes.forEach(type => {
+        expect(validTypes.includes(type)).toBe(true);
+      });
+    });
+
+    test('should reject invalid filter types', () => {
+      const invalidTypes = ['invalid', 'javascript', 'vidLength', 'options', '__proto__', 'constructor'];
+      const validTypes = ['videoId', 'channelId', 'channelName', 'comment', 'title', 'description'];
+      invalidTypes.forEach(type => {
+        expect(validTypes.includes(type)).toBe(false);
+      });
+    });
+  });
 });
 

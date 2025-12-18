@@ -224,6 +224,8 @@
       a.download = fileName;
       const event = new MouseEvent('click');
       a.dispatchEvent(event);
+      // Clean up the blob URL to prevent memory leak
+      setTimeout(() => URL.revokeObjectURL(url), 100);
     }, 0);
   }
 
@@ -279,7 +281,7 @@
     autoCloseBrackets: true,
     lineNumbers: true,
     styleActiveLine: true,
-    lineWrapping: true,
+    lineWrapping: false,
     extraKeys: {
       F11: function(cm) {
         if (cm.getOption("fullScreen")) {
@@ -298,8 +300,6 @@
     }
   };
   
-  // Cache the change event once
-  const changeEvent = new Event('change', { bubbles: true });
   const optionsEl = $('options');
   
   const allEditorAreas = ['title', 'description', 'channelName', 'channelId', 'videoId', 'comment', 'javascript'];
@@ -309,7 +309,7 @@
     jsEditors[v] = CodeMirror.fromTextArea($(v), opts);
     cmResizer(jsEditors[v], $(v + '_resizer'));
     jsEditors[v].on("change", () => {
-      optionsEl.dispatchEvent(changeEvent);
+      optionsEl.dispatchEvent(new Event('change', { bubbles: true }));
     });
   }
 

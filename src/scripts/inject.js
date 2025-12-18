@@ -566,7 +566,7 @@
           const badges = [];
           const valueLen = value.length;
           for (let k = 0; k < valueLen; k++) {
-            const style = value[k].metadataBadgeRenderer.style;
+            const style = value[k]?.metadataBadgeRenderer?.style;
             if (style === "BADGE_STYLE_TYPE_VERIFIED") badges.push("verified");
             else if (style === "BADGE_STYLE_TYPE_VERIFIED_ARTIST") badges.push("artist");
             else if (style === "BADGE_STYLE_TYPE_LIVE_NOW") badges.push("live");
@@ -1048,18 +1048,20 @@
       'B': 1000000000
     };
     
+    // Remove commas first before any other processing
+    let numericPart = views.replace(/,/g, '');
+    
     // Check if it ends with a multiplier
-    const lastChar = views.slice(-1).toUpperCase();
+    const lastChar = numericPart.slice(-1).toUpperCase();
     let multiplier = 1;
-    let numericPart = views.replace(',', '');
     
     if (multipliers[lastChar]) {
       multiplier = multipliers[lastChar];
-      numericPart = views.slice(0, -1); // Remove the letter
+      numericPart = numericPart.slice(0, -1); // Remove the letter
     }
     
     // Return the final count
-    return (numericPart * multiplier);
+    return (parseFloat(numericPart) * multiplier);
   }
 
   function transformToRegExp(data) {
@@ -1862,6 +1864,7 @@
 
   function menuOnTapMobile(event) {
     if (storageData === undefined) return;
+    if (!this || typeof this !== 'object') return;
 
     if (window.btReloadRequired) {
       window.btExports.openToast("BlockTube was updated, this tab needs to be reloaded to use this function", 5000);
@@ -2081,9 +2084,12 @@
 
     // Get the parent dom and data from this
     const {parentDom, parentData} = getParentDomAndData(isDataFromRightHandSide, this);
+    if (!parentDom || !parentData) return;
 
     // Get the data and type which is used for blocking the video
-    const {type, data, removeParent, stopPlayer} = getBlockData(parentDom, parentData, isDataFromRightHandSide, menuAction)
+    const blockData = getBlockData(parentDom, parentData, isDataFromRightHandSide, menuAction);
+    if (!blockData) return;
+    const {type, data, removeParent, stopPlayer} = blockData;
 
     // Notify system what data should be added to the block list
     postMessage('contextBlockData', { type, info: data });
@@ -2095,9 +2101,9 @@
       document.getElementById('movie_player').stopVideo();
     }
 
-    if (this.data.serviceEndpoint) {
-      if (this.onTap) this.onTap(event);
-      else if (this.onTap_) this.onTap_(event);
+    if (this.data?.serviceEndpoint) {
+      if (typeof this.onTap === 'function') this.onTap(event);
+      else if (typeof this.onTap_ === 'function') this.onTap_(event);
     }
   }
 

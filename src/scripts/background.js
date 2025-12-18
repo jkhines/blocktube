@@ -158,6 +158,8 @@ chrome.storage.local.get(['storageData', 'enabled'], (data) => {
     port.onMessage.addListener((msg) => {
       switch (msg.type) {
         case 'contextBlock': {
+          const validTypes = ['videoId', 'channelId', 'channelName', 'comment', 'title', 'description'];
+          if (!msg.data || !validTypes.includes(msg.data.type)) break;
           storage.filterData[msg.data.type].push(...msg.data.entries);
           chrome.storage.local.set({storageData: storage});
           break;
