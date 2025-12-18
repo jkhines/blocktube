@@ -1,11 +1,13 @@
 # BlockTube
 
 WebExtension for Chrome and Firefox.  
-Filter and block unwanted content from YouTube™.
+Filter and block unwanted content from YouTube.
+
+> **Fork Notice**: This is a maintained fork of [BlockTube](https://github.com/amitbl/blocktube) by [amitbl](https://github.com/amitbl). The original project is unmaintained. This fork includes significant enhancements including description-based blocking.
 
 ## Extension features
 
-* Block videos via: **Video Title** / **Channel Name** / **Channel ID** / **Video ID**
+* Block videos via: **Video Title** / **Channel Name** / **Channel ID** / **Video ID** / **Description**
 * Block comments via **User** / **Comment content**
 * Block videos within YouTube using context menus
 * Blocked videos do not appear anywhere on the site
@@ -16,6 +18,12 @@ Filter and block unwanted content from YouTube™.
 * Hide and block the Trending section
 * Protect extension options with a password
 * Filtering is done before any DOM rendering
+
+## Fork Enhancements
+
+This fork adds the following features not present in the original:
+
+* **Description blocking** - Filter videos based on their description content
 
 ## Install
 
@@ -59,7 +67,7 @@ Filter and block unwanted content from YouTube™.
 sudo apt install nodejs npm
 
 # Clone and install dependencies
-git clone https://github.com/amitbl/blocktube
+git clone https://github.com/jkhines/blocktube
 cd blocktube
 npm install
 ```
@@ -119,4 +127,5 @@ This project is licensed under the GPLv3 License - see the [LICENSE](LICENSE) fi
 
 ## Acknowledgments
 
+* Original BlockTube extension by [amitbl](https://github.com/amitbl)
 * Extension Icon from: http://www.designbolts.com/2013/09/08/40-free-shaded-social-media-icons/

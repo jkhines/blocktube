@@ -3,6 +3,17 @@
   "version": "1.0.0",
   "description": "YouTube content filter browser extension",
   "private": true,
+  "author": "jkhines",
+  "contributors": [
+    {
+      "name": "amitbl",
+      "url": "https://github.com/amitbl"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jkhines/blocktube"
+  },
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",
@@ -54,4 +65,3 @@
     ]
   }
 }
-
