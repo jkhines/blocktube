@@ -110,6 +110,10 @@
   // TODO: hack for blocking data in other objects
   let currentBlock = false;
 
+  // Track title listeners to avoid leaking duplicate handlers.
+  let titleUpdateListener = null;
+  let titleLoadListenerAttached = false;
+
   // add context menu to following objects - use Set for O(1) lookup
   const contextMenuObjectsList = [
     'backstagePostRenderer',
@@ -809,15 +813,25 @@
   }
 
   function censorTitle() {
-    const listener = function () {
+    const enforceTitle = function() {
       document.title = 'YouTube';
-      window.removeEventListener('yt-update-title', listener);
     };
-    window.addEventListener('yt-update-title', listener);
 
-    window.addEventListener('load', () => {
-      document.title = 'YouTube';
-    });
+    enforceTitle();
+
+    if (!titleLoadListenerAttached) {
+      window.addEventListener('load', enforceTitle);
+      titleLoadListenerAttached = true;
+    }
+
+    if (titleUpdateListener === null) {
+      titleUpdateListener = function () {
+        enforceTitle();
+        window.removeEventListener('yt-update-title', titleUpdateListener);
+        titleUpdateListener = null;
+      };
+      window.addEventListener('yt-update-title', titleUpdateListener);
+    }
   }
 
   function fixAutoPlayMobile() {
@@ -1253,11 +1267,13 @@
     if (regularVid > -1) {
       const vidObj = secondaryResults[regularVid].compactVideoRenderer;
       return vidObj.videoId;
-    } else {
-      const regularVid = secondaryResults.findIndex(x => has.call(x, 'lockupViewModel'));
-      const vidObj = secondaryResults[regularVid].lockupViewModel;
-      return vidObj.contentId;
     }
+
+    const lockupIndex = secondaryResults.findIndex(x => has.call(x, 'lockupViewModel'));
+    if (lockupIndex === -1) return false;
+
+    const vidObj = secondaryResults[lockupIndex].lockupViewModel;
+    return vidObj ? vidObj.contentId : false;
   }
 
   function addContextMenusMobile(obj) {
