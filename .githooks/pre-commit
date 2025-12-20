@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# PII Detection Pre-Commit Hook
+# Uses cursor-agent to scan staged changes for sensitive information
+
+STAGED_DIFF=$(git diff --cached)
+
+if [ -z "$STAGED_DIFF" ]; then
+    exit 0
+fi
+
+echo "Scanning staged changes for PII..."
+
+RESULT=$(cursor-agent --print --output-format text --workspace "$(git rev-parse --show-toplevel)" \
+    "Scan the following staged changes for PII or sensitive information. Look for: real organization or company names, employee usernames or account names, internal project names, specific resource IDs (ruleset IDs, database IDs), internal URLs or domains, email addresses, API keys, tokens, or credentials. If any sensitive data is found, output BLOCKED: followed by each instance with file and line context. If the changes are clean, output only: CLEAN
+
+$STAGED_DIFF" 2>/dev/null)
+
+if echo "$RESULT" | grep -q "BLOCKED:"; then
+    echo ""
+    echo "PII detected in staged changes:"
+    echo "$RESULT"
+    echo ""
+    echo "Remove sensitive data before committing."
+    exit 1
+fi
+
+if echo "$RESULT" | grep -q "CLEAN"; then
+    echo "No PII detected."
+    exit 0
+fi
+
+# If neither BLOCKED nor CLEAN, show output and let user decide
+echo "Scan result:"
+echo "$RESULT"
+echo ""
+read -p "Proceed with commit? (y/n) " -n 1 -r
+echo
+if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    exit 1
+fi
+
+exit 0
+
