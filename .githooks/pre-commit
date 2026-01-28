@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # PII Detection Pre-Commit Hook
-# Uses cursor-agent to scan staged changes for sensitive information
+# Uses cursor-agent or claude to scan staged changes for sensitive information
 
 STAGED_DIFF=$(git diff --cached)
 
@@ -9,12 +9,36 @@ if [ -z "$STAGED_DIFF" ]; then
     exit 0
 fi
 
-echo "Scanning staged changes for PII..."
+# Determine which agent to use (PII_SCAN_AGENT env var overrides auto-detection)
+AGENT_CMD=""
+if [ -n "$PII_SCAN_AGENT" ]; then
+    if command -v "$PII_SCAN_AGENT" &> /dev/null; then
+        AGENT_CMD="$PII_SCAN_AGENT"
+    else
+        echo "PII scan skipped: PII_SCAN_AGENT=$PII_SCAN_AGENT not found in PATH."
+        exit 0
+    fi
+elif command -v cursor-agent &> /dev/null; then
+    AGENT_CMD="cursor-agent"
+elif command -v claude &> /dev/null; then
+    AGENT_CMD="claude"
+else
+    echo "PII scan skipped: neither cursor-agent nor claude found in PATH."
+    echo "Install cursor-agent or claude to enable PII detection, or remove this hook."
+    exit 0
+fi
 
-RESULT=$(cursor-agent --print --output-format text --workspace "$(git rev-parse --show-toplevel)" \
-    "Scan the following staged changes for PII or sensitive information. Look for: real organization or company names, employee usernames or account names, internal project names, specific resource IDs (ruleset IDs, database IDs), internal URLs or domains, email addresses, API keys, tokens, or credentials. If any sensitive data is found, output BLOCKED: followed by each instance with file and line context. If the changes are clean, output only: CLEAN
+echo "Scanning staged changes for PII using $AGENT_CMD..."
 
-$STAGED_DIFF" 2>/dev/null)
+PROMPT="Scan the following staged changes for PII or sensitive information. Look for: real organization or company names, employee usernames or account names, internal project names, specific resource IDs (ruleset IDs, database IDs), internal URLs or domains, email addresses, API keys, tokens, or credentials. If any sensitive data is found, output BLOCKED: followed by each instance with file and line context. If the changes are clean, output only: CLEAN
+
+$STAGED_DIFF"
+
+if [ "$AGENT_CMD" = "cursor-agent" ]; then
+    RESULT=$(cursor-agent --print --output-format text --workspace "$(git rev-parse --show-toplevel)" "$PROMPT" 2>/dev/null)
+else
+    RESULT=$(cd "$(git rev-parse --show-toplevel)" && claude --print --output-format text "$PROMPT" 2>/dev/null)
+fi
 
 if echo "$RESULT" | grep -q "BLOCKED:"; then
     echo ""
