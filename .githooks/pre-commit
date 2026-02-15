@@ -30,7 +30,7 @@ fi
 
 echo "Scanning staged changes for PII using $AGENT_CMD..."
 
-PROMPT="Scan the following staged changes for PII or sensitive information. Look for: real organization or company names, employee usernames or account names, internal project names, specific resource IDs (ruleset IDs, database IDs), internal URLs or domains, email addresses, API keys, tokens, or credentials. If any sensitive data is found, output BLOCKED: followed by each instance with file and line context. If the changes are clean, output only: CLEAN
+PROMPT="Scan the following staged changes for PII or sensitive information. Look for: real organization or company names, employee usernames or account names, internal project names, specific resource IDs (ruleset IDs, database IDs), internal URLs or domains, email addresses, API keys, tokens, or credentials. If any sensitive data is found, output BLOCKED: followed by each instance with file and line context. If the changes are clean, output only: CLEAN. If PII is found in items being deleted, report CLEAN.
 
 $STAGED_DIFF"
 
