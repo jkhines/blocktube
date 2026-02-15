@@ -3,7 +3,7 @@
 # PII Detection Pre-Commit Hook
 # Uses cursor-agent or claude to scan staged changes for sensitive information
 
-STAGED_DIFF=$(git diff --cached)
+STAGED_DIFF=$(git diff --cached --diff-filter=ACMRTUXB)
 
 if [ -z "$STAGED_DIFF" ]; then
     exit 0
