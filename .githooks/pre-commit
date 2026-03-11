@@ -30,7 +30,14 @@ fi
 
 echo "Scanning staged changes for PII using $AGENT_CMD..."
 
-PROMPT="Scan the following staged changes for PII or sensitive information. Look for: real organization or company names, employee usernames or account names, internal project names, specific resource IDs (ruleset IDs, database IDs), internal URLs or domains, email addresses, API keys, tokens, or credentials. If any sensitive data is found, output BLOCKED: followed by each instance with file and line context. If the changes are clean, output only: CLEAN. If PII is found in items being deleted, report CLEAN.
+# Build an allowlist from the repo's own remote URLs so public repo references are not flagged.
+REMOTE_URLS=$(git remote -v 2>/dev/null | awk '{print $2}' | sort -u | paste -sd ', ' -)
+ALLOWLIST=""
+if [ -n "$REMOTE_URLS" ]; then
+    ALLOWLIST=" Allowlist (do NOT flag these URLs or any usernames/paths that appear in them): $REMOTE_URLS."
+fi
+
+PROMPT="Scan the following staged changes for PII or sensitive information. Look for: real organization or company names, employee usernames or account names, internal project names, specific resource IDs (ruleset IDs, database IDs), internal URLs or domains, email addresses, API keys, tokens, or credentials.${ALLOWLIST} If any sensitive data is found, output BLOCKED: followed by each instance with file and line context. If the changes are clean, output only: CLEAN. If PII is found in items being deleted, report CLEAN.
 
 $STAGED_DIFF"
 
