@@ -24,6 +24,7 @@ Filter and block unwanted content from YouTube.
 This fork adds the following features not present in the original:
 
 * **Description blocking** - Filter videos based on their description content
+* **Updated sidebar filtering** - Runtime (video length) blocking and the movies option now cover the current YouTube data model (`lockupViewModel`) used by watch page sidebar recommendations
 
 ## Install
 

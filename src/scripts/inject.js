@@ -364,7 +364,8 @@
         videoId: 'contentId',
         title: 'metadata.lockupMetadataViewModel.title.content',
         channelName: 'metadata.lockupMetadataViewModel.metadata.contentMetadataViewModel.metadataRows.metadataParts.text.content',
-        vidLength: 'contentImage.thumbnailViewModel.overlays.thumbnailOverlayBadgeViewModel.thumbnailBadges.thumbnailBadgeViewModel.text',
+        vidLength: ['contentImage.thumbnailViewModel.overlays.thumbnailOverlayBadgeViewModel.thumbnailBadges.thumbnailBadgeViewModel.text',
+                    'contentImage.thumbnailViewModel.overlays.thumbnailBottomOverlayViewModel.badges.thumbnailBadgeViewModel.text'],
         viewCount: 'metadata.lockupMetadataViewModel.metadata.contentMetadataViewModel.metadataRows[1].metadataParts.text.content',
         channelId: ['metadata.lockupMetadataViewModel.image.decoratedAvatarViewModel.rendererContext.commandContext.onTap.innertubeCommand.browseEndpoint.browseId', 
                     'metadata.lockupMetadataViewModel.metadata.contentMetadataViewModel.metadataRows.metadataParts.text.commandRuns.onTap.innertubeCommand.browseEndpoint.browseId'],
@@ -598,6 +599,7 @@
   ObjectFilter.prototype.isExtendedMatched = function(filteredObject, h) {
     if (storageData.options.movies) {
       if (h === 'movieRenderer' || h === 'compactMovieRenderer') return true;
+      if (h === 'lockupViewModel' && filteredObject.contentType === 'LOCKUP_CONTENT_TYPE_MOVIE') return true;
       if (h === 'videoRenderer' && !getObjectByPath(filteredObject, "shortBylineText.runs.navigationEndpoint.browseEndpoint") && filteredObject.longBylineText && filteredObject.badges) return true;
     }
     if (storageData.options.shorts && (h === 'shortsLockupViewModel' || h === 'reelItemRenderer' || h === 'gridShelfViewModel') ) return true;

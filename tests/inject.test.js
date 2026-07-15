@@ -1522,3 +1522,103 @@ describe('Badge parsing with optional chaining', () => {
   });
 });
 
+
+describe('lockupViewModel sidebar filtering (current YouTube data shapes)', () => {
+  const { ObjectFilter, filterRules } = inject;
+
+  // Trimmed from real /youtubei/v1/next data captured 2026-07: duration badge now
+  // lives under overlays[].thumbnailBottomOverlayViewModel.badges[].thumbnailBadgeViewModel.
+  function makeLockup({ contentType = 'LOCKUP_CONTENT_TYPE_VIDEO', duration = '2:45:21', title = 'Some Long Video' } = {}) {
+    return {
+      lockupViewModel: {
+        contentId: 'vid12345678',
+        contentType,
+        contentImage: {
+          thumbnailViewModel: {
+            image: { sources: [{ url: 'https://i.ytimg.com/vi/x/hqdefault.jpg' }] },
+            overlays: [{
+              thumbnailBottomOverlayViewModel: {
+                badges: [{
+                  thumbnailBadgeViewModel: {
+                    text: duration,
+                    badgeStyle: 'THUMBNAIL_OVERLAY_BADGE_STYLE_DEFAULT'
+                  }
+                }]
+              }
+            }]
+          }
+        },
+        metadata: {
+          lockupMetadataViewModel: {
+            title: { content: title },
+            metadata: {
+              contentMetadataViewModel: {
+                metadataRows: [
+                  { metadataParts: [{ text: { content: 'Some Channel' } }] },
+                  { metadataParts: [{ text: { content: '372K views' } }, { text: { content: '3 weeks ago' } }] }
+                ]
+              }
+            }
+          }
+        }
+      }
+    };
+  }
+
+  function setStorage(options = {}, vidLength = [null, null]) {
+    inject._setStorageData({
+      filterData: {
+        videoId: [],
+        channelId: [],
+        channelName: [],
+        title: [],
+        comment: [],
+        description: [],
+        vidLength,
+        javascript: ''
+      },
+      options
+    });
+  }
+
+  test('should block long videos via runtime length blocking (new badge path)', () => {
+    setStorage({ vidLength_type: 'block' }, [3600, 99999]);
+    const data = { contents: [makeLockup({ duration: '2:45:21' })] };
+    ObjectFilter(data, filterRules.main);
+    expect(data.contents).toHaveLength(0);
+  });
+
+  test('should keep short videos when runtime length blocking is set', () => {
+    setStorage({ vidLength_type: 'block' }, [3600, 99999]);
+    const data = { contents: [makeLockup({ duration: '4:59' })] };
+    ObjectFilter(data, filterRules.main);
+    expect(data.contents).toHaveLength(1);
+  });
+
+  test('should still support the legacy duration badge path', () => {
+    setStorage({ vidLength_type: 'block' }, [3600, 99999]);
+    const lockup = makeLockup({});
+    lockup.lockupViewModel.contentImage.thumbnailViewModel.overlays = [{
+      thumbnailOverlayBadgeViewModel: {
+        thumbnailBadges: [{ thumbnailBadgeViewModel: { text: '2:45:21' } }]
+      }
+    }];
+    const data = { contents: [lockup] };
+    ObjectFilter(data, filterRules.main);
+    expect(data.contents).toHaveLength(0);
+  });
+
+  test('should block movie lockups when movies option is enabled', () => {
+    setStorage({ movies: true });
+    const data = { contents: [makeLockup({ contentType: 'LOCKUP_CONTENT_TYPE_MOVIE', title: 'Batman vs Robin' })] };
+    ObjectFilter(data, filterRules.main);
+    expect(data.contents).toHaveLength(0);
+  });
+
+  test('should keep video lockups when movies option is enabled', () => {
+    setStorage({ movies: true });
+    const data = { contents: [makeLockup({})] };
+    ObjectFilter(data, filterRules.main);
+    expect(data.contents).toHaveLength(1);
+  });
+});
