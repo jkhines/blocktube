@@ -1,0 +1,157 @@
+{
+  "_meta": {
+    "description": "YouTube get_watch response fixture, used for SPA video-to-video navigation (replaced /youtubei/v1/next for this purpose)",
+    "source": "/youtubei/v1/get_watch",
+    "captured": "2026-07-15"
+  },
+  "parts": [
+    {
+      "playerResponse": {
+        "videoDetails": {
+          "videoId": "current_video",
+          "title": "Currently Watching Video",
+          "channelId": "UC_CURRENT_CHANNEL",
+          "author": "Current Channel",
+          "lengthSeconds": "300"
+        }
+      }
+    },
+    {
+      "responseContext": {},
+      "watchNextResponse": {
+        "contents": {
+          "twoColumnWatchNextResults": {
+            "results": {
+              "results": {
+                "contents": [
+                  {
+                    "videoPrimaryInfoRenderer": {
+                      "title": { "runs": [{ "text": "Currently Watching Video" }] }
+                    }
+                  },
+                  {
+                    "videoSecondaryInfoRenderer": {
+                      "owner": {
+                        "videoOwnerRenderer": {
+                          "title": { "runs": [{ "text": "Current Channel" }] },
+                          "navigationEndpoint": {
+                            "browseEndpoint": { "browseId": "UC_CURRENT_CHANNEL" }
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "secondaryResults": {
+              "secondaryResults": {
+                "results": [
+                  {
+                    "itemSectionRenderer": {
+                      "contents": [
+                        {
+                          "lockupViewModel": {
+                            "contentId": "recommended_1",
+                            "metadata": {
+                              "lockupMetadataViewModel": {
+                                "title": { "content": "Recommended Video 1" },
+                                "image": {
+                                  "decoratedAvatarViewModel": {
+                                    "rendererContext": {
+                                      "commandContext": {
+                                        "onTap": {
+                                          "innertubeCommand": {
+                                            "browseEndpoint": { "browseId": "UC_RECOMMENDED" }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                },
+                                "metadata": {
+                                  "contentMetadataViewModel": {
+                                    "metadataRows": [
+                                      { "metadataParts": [{ "text": { "content": "Recommended Channel" } }] }
+                                    ]
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "lockupViewModel": {
+                            "contentId": "BLOCKED_RECOMMENDED",
+                            "metadata": {
+                              "lockupMetadataViewModel": {
+                                "title": { "content": "This Recommendation Should Be Blocked" },
+                                "image": {
+                                  "decoratedAvatarViewModel": {
+                                    "rendererContext": {
+                                      "commandContext": {
+                                        "onTap": {
+                                          "innertubeCommand": {
+                                            "browseEndpoint": { "browseId": "UC_BLOCKED_CHANNEL" }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                },
+                                "metadata": {
+                                  "contentMetadataViewModel": {
+                                    "metadataRows": [
+                                      { "metadataParts": [{ "text": { "content": "Blocked Channel" } }] }
+                                    ]
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "lockupViewModel": {
+                            "contentId": "recommended_2",
+                            "metadata": {
+                              "lockupMetadataViewModel": {
+                                "title": { "content": "Another Good Recommendation" },
+                                "image": {
+                                  "decoratedAvatarViewModel": {
+                                    "rendererContext": {
+                                      "commandContext": {
+                                        "onTap": {
+                                          "innertubeCommand": {
+                                            "browseEndpoint": { "browseId": "UC_GOOD_CHANNEL" }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                },
+                                "metadata": {
+                                  "contentMetadataViewModel": {
+                                    "metadataRows": [
+                                      { "metadataParts": [{ "text": { "content": "Good Channel" } }] }
+                                    ]
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "playerOverlays": {
+          "playerOverlayRenderer": {}
+        }
+      }
+    }
+  ]
+}

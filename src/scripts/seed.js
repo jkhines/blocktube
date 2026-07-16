@@ -55,6 +55,7 @@
     '/youtubei/v1/guide',
     '/youtubei/v1/browse',
     '/youtubei/v1/next',
+    '/youtubei/v1/get_watch',
     '/youtubei/v1/player'
   ];
 

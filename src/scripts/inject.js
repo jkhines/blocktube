@@ -523,7 +523,13 @@
       if (isRegexProp && (properties === undefined || (properties.length === 0 && !jsFilterEnabled))) continue;
 
       let value = getFlattenByPath(obj, filterPath);
-      if (value === undefined) continue;
+      if (value === undefined) {
+        if (jsFilterEnabled && h === 'channelId') {
+          const collabIds = findCollabChannelIds(obj);
+          if (collabIds) friendlyVideoObj.channelIds = collabIds;
+        }
+        continue;
+      }
 
       if (h === 'percentWatched' && storageData.options.percent_watched_hide && objectType !== 'playlistPanelVideoRenderer'
            && !historyPaths.has(currentPath)
@@ -971,6 +977,29 @@
     }
   }
 
+  // Multi-creator collab videos replace the normal single browseEndpoint on the byline
+  // with a "Collaborators" dialog listing each contributing channel separately, so the
+  // regular channelId path resolves to undefined for them. This looks for that dialog's
+  // distinctive header (present regardless of which renderer type wraps it) and returns
+  // every contributor's browseId found inside it.
+  function findCollabChannelIds(obj, depth = 0) {
+    if (depth > 12 || !obj || typeof obj !== 'object') return null;
+    const headline = getObjectByPath(obj, 'dialogViewModel.header.dialogHeaderViewModel.headline.content');
+    if (headline === 'Collaborators') {
+      const listItems = getObjectByPath(obj, 'dialogViewModel.customContent.listViewModel.listItems') || [];
+      const ids = listItems
+        .map(li => getObjectByPath(li, 'listItemViewModel.rendererContext.commandContext.onTap.innertubeCommand.browseEndpoint.browseId'))
+        .filter(Boolean);
+      return ids.length ? ids : null;
+    }
+    const keys = Object.keys(obj);
+    for (let i = 0; i < keys.length; i++) {
+      const found = findCollabChannelIds(obj[keys[i]], depth + 1);
+      if (found) return found;
+    }
+    return null;
+  }
+
   function postMessage(type, data) {
     window.postMessage({ from: 'BLOCKTUBE_PAGE', type, data }, document.location.origin);
   }
@@ -1015,7 +1044,7 @@
         // when we have an array of objects, find an element that contains the key v
         let found = undefined;
         for (let j = 0, len = nextObj.length; j < len; j++) {
-          if (has.call(nextObj[j], v)) {
+          if (nextObj[j] && has.call(nextObj[j], v)) {
             found = nextObj[j];
             break;
           }
@@ -1142,6 +1171,25 @@
       const postActions = [fixAutoplay];
       if (currentBlock) postActions.push(redirectToNext);
       ObjectFilter(resp, mergedFilterRules, postActions, true);
+    }
+    else if (url.pathname === '/youtubei/v1/get_watch') {
+      // SPA video-to-video navigation now fetches this instead of /youtubei/v1/next.
+      // The response is an array of batched parts rather than a single object.
+      // currentBlock is reset first because it may still be true from an unrelated
+      // earlier player fetch (e.g. a hover-preview); playerResponse below is the only
+      // reliable signal for whether *this* video is blocked.
+      currentBlock = false;
+      for (let i = 0, len = resp.length; i < len; i++) {
+        const part = resp[i];
+        if (part.playerResponse) {
+          ObjectFilter(part.playerResponse, filterRules.ytPlayer, [playerMiscFilters]);
+        }
+        if (part.watchNextResponse) {
+          const postActions = [fixAutoplay];
+          if (currentBlock) postActions.push(redirectToNext);
+          ObjectFilter(part.watchNextResponse, mergedFilterRules, postActions, true);
+        }
+      }
     }
     else if (url.pathname === '/youtubei/v1/guide') {
       ObjectFilter(resp, filterRules.guide, [], true);
@@ -2163,6 +2211,7 @@
       // Utility functions
       getObjectByPath,
       getFlattenByPath,
+      findCollabChannelIds,
       flattenRuns,
       parseTime,
       parseViewCount,
@@ -2183,6 +2232,7 @@
       blockMixes,
       blockTrending,
       blockShorts,
+      fetchFilter,
       // Test helpers
       _setStorageData: (data) => { storageData = data; },
       _getStorageData: () => storageData,

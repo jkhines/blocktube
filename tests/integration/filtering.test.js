@@ -589,6 +589,138 @@ describe('Integration: JavaScript Custom Filter', () => {
     );
     expect(normalViewVideo).toBeDefined();
   });
+
+  test('exposes every collaborator channelId to the custom filter for a multi-creator video', () => {
+    let seenFriendlyObj = null;
+    const customFilter = (video) => {
+      seenFriendlyObj = video;
+      return false;
+    };
+
+    inject._setJsFilter(customFilter);
+    inject._setStorageData({
+      filterData: {
+        videoId: [], channelId: [], channelName: [], title: [],
+        comment: [], description: [], vidLength: [NaN, NaN]
+      },
+      options: { enable_javascript: true }
+    });
+
+    const data = {
+      videoRenderer: {
+        videoId: 'collab_video',
+        title: { simpleText: 'A collab video' },
+        shortBylineText: {
+          runs: [{
+            text: 'Dreaming Horizon and 2 more',
+            navigationEndpoint: {
+              showDialogCommand: {
+                panelLoadingStrategy: {
+                  inlineContent: {
+                    dialogViewModel: {
+                      header: { dialogHeaderViewModel: { headline: { content: 'Collaborators' } } },
+                      customContent: {
+                        listViewModel: {
+                          listItems: [
+                            { listItemViewModel: { rendererContext: { commandContext: { onTap: { innertubeCommand: {
+                              browseEndpoint: { browseId: 'UCrSGg-G7WT78_-swkCxJ5xw' }
+                            } } } } } },
+                            { listItemViewModel: { rendererContext: { commandContext: { onTap: { innertubeCommand: {
+                              browseEndpoint: { browseId: 'UCxdcn74rlAh2N2M4LW_W6Ag' }
+                            } } } } } }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }]
+        }
+      }
+    };
+
+    ObjectFilter(data, filterRules.main);
+
+    expect(seenFriendlyObj.channelId).toBeUndefined();
+    expect(seenFriendlyObj.channelIds).toEqual(['UCrSGg-G7WT78_-swkCxJ5xw', 'UCxdcn74rlAh2N2M4LW_W6Ag']);
+  });
+});
+
+describe('Integration: get_watch (SPA video-to-video navigation) Filtering', () => {
+  const getWatchFixture = require('../fixtures/get-watch-response.json');
+
+  beforeEach(() => {
+    inject._setJsFilter(null);
+    inject._setStorageData({
+      filterData: {
+        videoId: [],
+        channelId: [/^UC_BLOCKED_CHANNEL$/],
+        channelName: [],
+        title: [],
+        comment: [],
+        description: [],
+        vidLength: [NaN, NaN]
+      },
+      options: {}
+    });
+  });
+
+  afterEach(() => {
+    inject._setJsFilter(null);
+  });
+
+  test('filters blocked channel out of secondaryResults sidebar recommendations', () => {
+    const resp = deepClone(getWatchFixture.parts);
+
+    inject.fetchFilter(new URL('https://www.youtube.com/youtubei/v1/get_watch'), resp);
+
+    const contents = resp[1].watchNextResponse.contents.twoColumnWatchNextResults
+      .secondaryResults.secondaryResults.results[0].itemSectionRenderer.contents;
+    const ids = contents.filter(Boolean).map(c => c.lockupViewModel?.contentId);
+
+    expect(ids).toContain('recommended_1');
+    expect(ids).toContain('recommended_2');
+    expect(ids).not.toContain('BLOCKED_RECOMMENDED');
+  });
+
+  test('does not wipe secondaryResults for an allowed video when an earlier unrelated fetch left currentBlock stale', () => {
+    // Simulate a hover-preview /youtubei/v1/player fetch for a blocked channel setting
+    // the shared currentBlock flag, before the real navigation to an allowed video.
+    inject.fetchFilter(new URL('https://www.youtube.com/youtubei/v1/player'), {
+      videoDetails: {
+        videoId: 'hover_preview_video',
+        channelId: 'UC_BLOCKED_CHANNEL',
+        author: 'Blocked Channel',
+        title: 'Hover preview',
+        lengthSeconds: '10'
+      }
+    });
+
+    const resp = deepClone(getWatchFixture.parts);
+    inject.fetchFilter(new URL('https://www.youtube.com/youtubei/v1/get_watch'), resp);
+
+    const secondaryResults = resp[1].watchNextResponse.contents.twoColumnWatchNextResults
+      .secondaryResults.secondaryResults;
+    expect(secondaryResults).toBeDefined();
+    expect(secondaryResults.results).toBeDefined();
+
+    const contents = secondaryResults.results[0].itemSectionRenderer.contents;
+    const ids = contents.filter(Boolean).map(c => c.lockupViewModel?.contentId);
+    expect(ids).toContain('recommended_1');
+    expect(ids).toContain('recommended_2');
+  });
+
+  test('disables the player when the currently watched video is from a blocked channel', () => {
+    const resp = deepClone(getWatchFixture.parts);
+    resp[0].playerResponse.videoDetails.channelId = 'UC_BLOCKED_CHANNEL';
+
+    inject.fetchFilter(new URL('https://www.youtube.com/youtubei/v1/get_watch'), resp);
+
+    expect(resp[0].playerResponse.videoDetails).toBeUndefined();
+    expect(resp[0].playerResponse.playabilityStatus.status).toBe('ERROR');
+  });
 });
 
 describe('Integration: No Filters Applied', () => {

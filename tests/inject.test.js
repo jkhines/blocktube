@@ -72,6 +72,17 @@ describe('inject.js core functions', () => {
       expect(getObjectByPath(obj, 'items.value')).toBe('found');
     });
 
+    test('should skip null/undefined entries when searching an array of objects', () => {
+      const obj = { items: [null, undefined, { value: 'found' }] };
+      expect(getObjectByPath(obj, 'items.value')).toBe('found');
+    });
+
+    test('should return undefined, not throw, when an array of objects contains only null/undefined', () => {
+      const obj = { items: [null, undefined] };
+      expect(() => getObjectByPath(obj, 'items.value')).not.toThrow();
+      expect(getObjectByPath(obj, 'items.value')).toBeUndefined();
+    });
+
     test('should return undefined for null input', () => {
       expect(getObjectByPath(null, 'a.b')).toBeUndefined();
     });
@@ -962,6 +973,76 @@ describe('getFlattenByPath', () => {
       }
     };
     expect(getFlattenByPath(obj, 'title')).toBe('Part One Two');
+  });
+});
+
+describe('findCollabChannelIds', () => {
+  const { findCollabChannelIds } = inject;
+
+  // Trimmed from a real captured videoRenderer.longBylineText for a 3-creator collab video.
+  const collabByline = {
+    runs: [{
+      text: 'Dreaming Horizon and 2 more',
+      navigationEndpoint: {
+        showDialogCommand: {
+          panelLoadingStrategy: {
+            inlineContent: {
+              dialogViewModel: {
+                header: { dialogHeaderViewModel: { headline: { content: 'Collaborators' } } },
+                customContent: {
+                  listViewModel: {
+                    listItems: [
+                      { listItemViewModel: { rendererContext: { commandContext: { onTap: { innertubeCommand: {
+                        browseEndpoint: { browseId: 'UCrSGg-G7WT78_-swkCxJ5xw' }
+                      } } } } } },
+                      { listItemViewModel: { rendererContext: { commandContext: { onTap: { innertubeCommand: {
+                        browseEndpoint: { browseId: 'UCxdcn74rlAh2N2M4LW_W6Ag' }
+                      } } } } } },
+                      { listItemViewModel: { rendererContext: { commandContext: { onTap: { innertubeCommand: {
+                        browseEndpoint: { browseId: 'UCUG3kvwixpD9tRGd0qmWoxw' }
+                      } } } } } }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }]
+  };
+
+  test('finds all collaborator channel IDs regardless of nesting depth', () => {
+    const wrapper = { videoRenderer: { longBylineText: collabByline } };
+    expect(findCollabChannelIds(wrapper)).toEqual([
+      'UCrSGg-G7WT78_-swkCxJ5xw',
+      'UCxdcn74rlAh2N2M4LW_W6Ag',
+      'UCUG3kvwixpD9tRGd0qmWoxw'
+    ]);
+  });
+
+  test('finds the dialog under a differently-shaped renderer (e.g. lockupViewModel)', () => {
+    const wrapper = { lockupViewModel: { metadata: { lockupMetadataViewModel: { image: collabByline } } } };
+    expect(findCollabChannelIds(wrapper)).toEqual([
+      'UCrSGg-G7WT78_-swkCxJ5xw',
+      'UCxdcn74rlAh2N2M4LW_W6Ag',
+      'UCUG3kvwixpD9tRGd0qmWoxw'
+    ]);
+  });
+
+  test('returns null for a normal single-channel video with no Collaborators dialog', () => {
+    const wrapper = {
+      videoRenderer: {
+        shortBylineText: { runs: [{ text: 'Solo Channel', navigationEndpoint: { browseEndpoint: { browseId: 'UCsolo' } } }] }
+      }
+    };
+    expect(findCollabChannelIds(wrapper)).toBeNull();
+  });
+
+  test('returns null for non-object input', () => {
+    expect(findCollabChannelIds(null)).toBeNull();
+    expect(findCollabChannelIds(undefined)).toBeNull();
+    expect(findCollabChannelIds('string')).toBeNull();
   });
 });
 
